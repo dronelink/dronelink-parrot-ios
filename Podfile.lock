@@ -1,0 +1,30 @@
+PODS:
+  - ArsdkEngine (1.1.2):
+    - GroundSdk (= 1.1.2)
+  - DronelinkCore (1.1.0)
+  - GroundSdk (1.1.2):
+    - SdkCore (= 1.1.2)
+  - SdkCore (1.1.2)
+
+DEPENDENCIES:
+  - ArsdkEngine (= 1.1.2)
+  - DronelinkCore (~> 1.1.0)
+  - GroundSdk (= 1.1.2)
+  - SdkCore (= 1.1.2)
+
+SPEC REPOS:
+  trunk:
+    - ArsdkEngine
+    - DronelinkCore
+    - GroundSdk
+    - SdkCore
+
+SPEC CHECKSUMS:
+  ArsdkEngine: 568ef10320b815c1878aa170910a57030d06f6cc
+  DronelinkCore: 5461997e64482c0074b82ba86bc766b097a2fc9b
+  GroundSdk: 2c4928e03be376f7c2b7dce1c50dee491fae86e3
+  SdkCore: 7259c6531144507839f25d8f52c090686aa333f3
+
+PODFILE CHECKSUM: 3bacd79df331ec78ea89e732aec355a0c6acda9f
+
+COCOAPODS: 1.8.4

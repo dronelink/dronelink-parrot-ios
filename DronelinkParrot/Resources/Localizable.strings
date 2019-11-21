@@ -1,0 +1,25 @@
+//
+//  Localizable.strings
+//  DronelinkParrot
+//
+//  Created by Jim McAndrew on 11/20/19.
+//  Copyright © 2019 Dronelink. All rights reserved.
+//
+"MissionDisengageReason.command.type.unhandled" = "Unhandled Command Type";
+"MissionDisengageReason.command.type.unsupported" = "Unsupported Command Type";
+"MissionDisengageReason.drone.control.unavailable.title" = "Drone Control Unavailable";
+"MissionDisengageReason.telemetry.unavailable.title" = "Telemetry Unavailable";
+"MissionDisengageReason.telemetry.delayed.title" = "Telemetry Delayed";
+"MissionDisengageReason.take.control.failed.title" = "Unable to Take Control";
+"MissionDisengageReason.take.off.failed.title" = "Unable to Take Off";
+"MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";
+"MissionDisengageReason.drone.gimbal.unavailable.title" = "Gimbal Unavailable";
+"MissionDisengageReason.drone.camera.mode.invalid.title" = "Camera Mode Invalid";
+"MissionDisengageReason.drone.camera.start.photo.failed.title" = "Unable to Start Photo Capture";
+"MissionDisengageReason.drone.camera.start.video.failed.title" = "Unable to Start Video Capture";
+"MissionDisengageReason.drone.camera.stop.photo.failed.title" = "Unable to Stop Photo Capture";
+"MissionDisengageReason.drone.camera.stop.video.failed.title" = "Unable to Stop Video Capture";
+
+"ParrotDroneAdapter.startGoHome.unavailable" = "Unable to return home";
+"ParrotDroneAdapter.startGoHome.failed" = "Return home failed";
+"ParrotDroneAdapter.startLanding.unavailable" = "Unable to land";
