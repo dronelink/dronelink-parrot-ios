@@ -25,9 +25,9 @@ extension ParrotDroneSession {
             
             adapter.gimbal.control(
                 mode: .position,
-                yaw: command.orientation.yaw ?? 0,
-                pitch: command.orientation.pitch?.convertRadiansToDegrees ?? 0,
-                roll: command.orientation.roll ?? 0)
+                yaw: command.orientation.yaw?.convertRadiansToDegrees,
+                pitch: command.orientation.pitch?.convertRadiansToDegrees,
+                roll: command.orientation.roll?.convertRadiansToDegrees)
             finished(nil)
             return nil
         }

@@ -13,6 +13,7 @@
 		247825E9238606EA009D35C4 /* ParrotDroneSession+GimbalCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 247825E6238606EA009D35C4 /* ParrotDroneSession+GimbalCommand.swift */; };
 		247825EA238606EA009D35C4 /* ParrotDroneSession+DroneCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 247825E7238606EA009D35C4 /* ParrotDroneSession+DroneCommand.swift */; };
 		247825EB238606EA009D35C4 /* ParrotDroneSession+CameraCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 247825E8238606EA009D35C4 /* ParrotDroneSession+CameraCommand.swift */; };
+		24853F36247C3BE600FB310E /* ParrotTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24853F35247C3BE600FB310E /* ParrotTelemetry.swift */; };
 		24BB50DD23858DAD0039C86F /* ParrotDroneSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BB50DC23858DAD0039C86F /* ParrotDroneSessionManager.swift */; };
 		24BB50DF23858E750039C86F /* ParrotDroneSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BB50DE23858E750039C86F /* ParrotDroneSession.swift */; };
 		24BB50E123858EDD0039C86F /* ParrotAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24BB50E023858EDD0039C86F /* ParrotAdapters.swift */; };
@@ -27,6 +28,7 @@
 		247825E6238606EA009D35C4 /* ParrotDroneSession+GimbalCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ParrotDroneSession+GimbalCommand.swift"; sourceTree = "<group>"; };
 		247825E7238606EA009D35C4 /* ParrotDroneSession+DroneCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ParrotDroneSession+DroneCommand.swift"; sourceTree = "<group>"; };
 		247825E8238606EA009D35C4 /* ParrotDroneSession+CameraCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ParrotDroneSession+CameraCommand.swift"; sourceTree = "<group>"; };
+		24853F35247C3BE600FB310E /* ParrotTelemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParrotTelemetry.swift; sourceTree = "<group>"; };
 		24BB50D123858C1F0039C86F /* DronelinkParrot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DronelinkParrot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		24BB50D523858C1F0039C86F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		24BB50DC23858DAD0039C86F /* ParrotDroneSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParrotDroneSessionManager.swift; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 				247825E7238606EA009D35C4 /* ParrotDroneSession+DroneCommand.swift */,
 				247825E6238606EA009D35C4 /* ParrotDroneSession+GimbalCommand.swift */,
 				24BB50DC23858DAD0039C86F /* ParrotDroneSessionManager.swift */,
+				24853F35247C3BE600FB310E /* ParrotTelemetry.swift */,
 				24BB50D523858C1F0039C86F /* Info.plist */,
 				247825E12385A5F3009D35C4 /* Resources */,
 			);
@@ -154,7 +157,7 @@
 				TargetAttributes = {
 					24BB50D023858C1F0039C86F = {
 						CreatedOnToolsVersion = 11.2.1;
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1140;
 					};
 				};
 			};
@@ -218,6 +221,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				247825EB238606EA009D35C4 /* ParrotDroneSession+CameraCommand.swift in Sources */,
+				24853F36247C3BE600FB310E /* ParrotTelemetry.swift in Sources */,
 				247825E9238606EA009D35C4 /* ParrotDroneSession+GimbalCommand.swift in Sources */,
 				24BB50E123858EDD0039C86F /* ParrotAdapters.swift in Sources */,
 				247825E52385A663009D35C4 /* Extensions.swift in Sources */,
@@ -283,7 +287,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -340,7 +344,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

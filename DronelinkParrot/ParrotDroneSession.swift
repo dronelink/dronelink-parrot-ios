@@ -14,6 +14,7 @@ import CoreLocation
 public class ParrotDroneSession: NSObject {
     internal let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneSession")
     
+    public let telemetryProvider: ParrotTelemetryProvider
     public let adapter: ParrotDroneAdapter
     
     private let _opened = Date()
@@ -28,35 +29,19 @@ public class ParrotDroneSession: NSObject {
     private let cameraCommands = MultiChannelCommandQueue()
     private let gimbalCommands = MultiChannelCommandQueue()
     
-    private var deviceStateRef: Ref<DeviceState>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var gpsRef: Ref<Gps>?
-    private var compassRef: Ref<Compass>?
-    private var altimeterRef: Ref<Altimeter>?
-    private var speedometerRef: Ref<Speedometer>?
-    private var attitudeIndicatorRef: Ref<AttitudeIndicator>?
+    private var pilotingStateRef: Ref<ManualCopterPilotingItf>?
     private var batteryInfoRef: Ref<BatteryInfo>?
     
-    private var _deviceState: DatedValue<DeviceState>?
     private var _flyingIndicators: DatedValue<FlyingIndicators>?
-    private var _gps: DatedValue<Gps>?
-    private var _compass: DatedValue<Compass>?
-    private var _altimeter: DatedValue<Altimeter>?
-    private var _speedometer: DatedValue<Speedometer>?
-    private var _attitudeIndicator: DatedValue<AttitudeIndicator>?
     private var _batteryInfo: DatedValue<BatteryInfo>?
     
-    public var deviceState: DatedValue<DeviceState>? { _deviceState }
     public var flyingIndicators: DatedValue<FlyingIndicators>? { _flyingIndicators }
-    public var gps: DatedValue<Gps>? { _gps }
-    public var compass: DatedValue<Compass>? { _compass }
-    public var altimeter: DatedValue<Altimeter>? { _altimeter }
-    public var speedometer: DatedValue<Speedometer>? { _speedometer }
-    public var attitudeIndicator: DatedValue<AttitudeIndicator>? { _attitudeIndicator }
     public var batteryInfo: DatedValue<BatteryInfo>? { _batteryInfo }
     
-    public init(drone: Drone) {
-        adapter = ParrotDroneAdapter(drone: drone)
+    public init(drone: Drone, remoteControl: RemoteControl?, telemetryProvider: ParrotTelemetryProvider) {
+        self.telemetryProvider = telemetryProvider
+        adapter = ParrotDroneAdapter(drone: drone, remoteControl: remoteControl, telemetryProvider: telemetryProvider)
         super.init()
         initDrone()
         Thread.detachNewThread(self.execute)
@@ -64,11 +49,6 @@ public class ParrotDroneSession: NSObject {
     
     private func initDrone() {
         os_log(.info, log: log, "Drone session opened")
-        
-        deviceStateRef = adapter.drone.getState { value in
-            guard let value = value else { return }
-            self._deviceState = DatedValue<DeviceState>(value: value)
-        }
         
         flyingIndicatorsRef = adapter.drone.getInstrument(Instruments.flyingIndicators) { value in
             guard let value = value else { return }
@@ -81,37 +61,10 @@ public class ParrotDroneSession: NSObject {
             }
         }
         
-        gpsRef = adapter.drone.getInstrument(Instruments.gps) { value in
-            guard let value = value else { return }
-            self._gps = DatedValue<Gps>(value: value)
-        }
-        
-        compassRef = adapter.drone.getInstrument(Instruments.compass) { value in
-            guard let value = value else { return }
-            self._compass = DatedValue<Compass>(value: value)
-        }
-        
-        altimeterRef = adapter.drone.getInstrument(Instruments.altimeter) { value in
-            guard let value = value else { return }
-            self._altimeter = DatedValue<Altimeter>(value: value)
-        }
-        
-        speedometerRef = adapter.drone.getInstrument(Instruments.speedometer) { value in
-            guard let value = value else { return }
-            self._speedometer = DatedValue<Speedometer>(value: value)
-        }
-        
-        attitudeIndicatorRef = adapter.drone.getInstrument(Instruments.attitudeIndicator) { value in
-            guard let value = value else { return }
-            self._attitudeIndicator = DatedValue<AttitudeIndicator>(value: value)
-        }
-        
         batteryInfoRef = adapter.drone.getInstrument(Instruments.batteryInfo) { value in
             guard let value = value else { return }
             self._batteryInfo = DatedValue<BatteryInfo>(value: value)
         }
-        
-        //FIXME need a way to do onCameraFileGenerated
         
         _initialized = true
         delegates.invoke { $0.onInitialized(session: self) }
@@ -120,11 +73,7 @@ public class ParrotDroneSession: NSObject {
     
     private func execute() {
         while !_closed {
-            Thread.sleep(forTimeInterval: 0.1)
-        }
-        
-        while !_closed {
-            if let location = _gps?.value.lastKnownLocation {
+            if let location = telemetryProvider.telemetry?.value.location {
                 if (!_located) {
                     _located = true
                     DispatchQueue.global().async {
@@ -144,13 +93,7 @@ public class ParrotDroneSession: NSObject {
             Thread.sleep(forTimeInterval: 0.1)
         }
         
-        deviceStateRef = nil
         flyingIndicatorsRef = nil
-        gpsRef = nil
-        compassRef = nil
-        altimeterRef = nil
-        speedometerRef = nil
-        attitudeIndicatorRef = nil
         batteryInfoRef = nil
         
         os_log(.info, log: log, "Drone session closed")
@@ -184,7 +127,7 @@ public class ParrotDroneSession: NSObject {
 
 extension ParrotDroneSession: DroneSession {
     public var drone: DroneAdapter { adapter }
-    public var state: DatedValue<DroneStateAdapter>? { DatedValue(value: self, date: deviceState?.date ?? Date()) }
+    public var state: DatedValue<DroneStateAdapter>? { DatedValue(value: self, date: telemetryProvider.telemetry?.date ?? Date()) }
     public var opened: Date { _opened }
     public var id: String { _id }
     public var manufacturer: String { "Parrot" }
@@ -194,13 +137,13 @@ extension ParrotDroneSession: DroneSession {
     public var firmwarePackageVersion: String? { nil }
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
-    public var telemetryDelayed: Bool { -(_gps?.date.timeIntervalSinceNow ?? 0) > 1.0 }
+    public var telemetryDelayed: Bool { -(telemetryProvider.telemetry?.date.timeIntervalSinceNow ?? 0) > 1.0 }
     public var disengageReason: Mission.Message? {
         if adapter.flightController == nil {
             return Mission.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
         }
         
-        if _gps == nil {
+        if telemetryProvider.telemetry == nil {
             return Mission.Message(title: "MissionDisengageReason.telemetry.unavailable.title".localized)
         }
         
@@ -240,7 +183,8 @@ extension ParrotDroneSession: DroneSession {
                 },
                 finished: { error in
                     self.commandFinished(command: command, error: error)
-                }
+                },
+                config: command.config
             ))
             return
         }
@@ -255,7 +199,8 @@ extension ParrotDroneSession: DroneSession {
                 },
                 finished: { error in
                     self.commandFinished(command: command, error: error)
-                }
+                },
+                config: command.config
             ))
             return
         }
@@ -270,7 +215,8 @@ extension ParrotDroneSession: DroneSession {
                 },
                 finished: { error in
                     self.commandFinished(command: command, error: error)
-                }
+                },
+                config: command.config
             ))
             return
         }
@@ -304,6 +250,11 @@ extension ParrotDroneSession: DroneSession {
         return DatedValue<GimbalStateAdapter>(value: gimbal)
     }
     
+    public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
+        //FIXME
+        return nil
+    }
+    
     public func close() {
         _closed = true
     }
@@ -311,13 +262,36 @@ extension ParrotDroneSession: DroneSession {
 
 extension ParrotDroneSession: DroneStateAdapter {
     public var isFlying: Bool { _flyingIndicators?.value.isFlying ?? false }
-    public var location: CLLocation? { _gps?.value.lastKnownLocation }
+    public var location: CLLocation? { telemetryProvider.telemetry?.value.location }
     public var homeLocation: CLLocation? { adapter.returnHomeController?.homeLocation }
     public var lastKnownGroundLocation: CLLocation? { _lastKnownGroundLocation }
     public var takeoffLocation: CLLocation? { isFlying ? (lastKnownGroundLocation ?? homeLocation) : location }
-    public var course: Double { speedometer?.value.course ?? 0 }
-    public var horizontalSpeed: Double { speedometer?.value.groundSpeed ?? 0 }
-    public var verticalSpeed: Double { speedometer?.value.verticalSpeed ?? 0 }
-    public var altitude: Double { altimeter?.value.takeoffRelativeAltitude ?? 0 }
-    public var missionOrientation: Mission.Orientation3 { attitudeIndicator?.value.missionOrientation ?? Mission.Orientation3() }
+    public var takeoffAltitude: Double? { telemetryProvider.telemetry?.value.takeoffAltitude }
+    public var course: Double {
+        guard let telemetry = telemetryProvider.telemetry?.value else {
+            return 0
+        }
+        return atan2(telemetry.speedNorth, telemetry.speedEast)
+    }
+    public var horizontalSpeed: Double {
+        guard let telemetry = telemetryProvider.telemetry?.value else {
+            return 0
+        }
+        return sqrt(pow(telemetry.speedNorth, 2) + pow(telemetry.speedEast, 2))
+    }
+    public var verticalSpeed: Double {
+        guard let telemetry = telemetryProvider.telemetry?.value else {
+            return 0
+        }
+        return telemetry.speedDown == 0 ? 0 : -telemetry.speedDown
+    }
+    public var altitude: Double { telemetryProvider.telemetry?.value.altitude ?? 0 }
+    public var batteryPercent: Double? {
+        if let batteryLevel = batteryInfo?.value.batteryLevel {
+            return Double(batteryLevel) / 100
+        }
+        return nil
+    }
+    public var obstacleDistance: Double? { return nil }
+    public var missionOrientation: Mission.Orientation3 { telemetryProvider.telemetry?.value.droneMissionOrientation ?? Mission.Orientation3() }
 }

@@ -14,7 +14,9 @@ extension DronelinkParrot {
     internal static let bundle = Bundle.init(for: DronelinkParrot.self)
 }
 
-public class DronelinkParrot {}
+public class DronelinkParrot {
+    public static var maxVelocityHorizontal: Double { 10.0 }
+}
 
 extension FlyingIndicators {
     var isFlying: Bool {
@@ -47,21 +49,6 @@ extension FlyingIndicators {
     }
 }
 
-extension Speedometer {
-    public var verticalSpeed: Double { -downSpeed }
-    public var course: Double { Double(atan2(northSpeed, eastSpeed)) }
-}
-
-extension AttitudeIndicator {
-    public var missionOrientation: Mission.Orientation3 {
-        Mission.Orientation3(
-            x: pitch.convertDegreesToRadians,
-            y: roll.convertDegreesToRadians,
-            z: 0
-        )
-    }
-}
-
 extension Mission.CameraAEBCount {
     var parrotValue: CameraBracketingValue {
         switch self {
@@ -69,7 +56,6 @@ extension Mission.CameraAEBCount {
         case ._5: return .preset1ev2ev
         case ._7: return .preset1ev2ev3ev
         case .unknown: return .preset1ev
-        @unknown default: return .preset1ev
         }
     }
 }
@@ -112,7 +98,6 @@ extension Mission.CameraColor {
         case .filmI: return .standard
         case .hlg: return .standard
         case .unknown: return .standard
-        @unknown default: return .standard
         }
     }
 }
@@ -153,7 +138,6 @@ extension Mission.CameraExposureCompensation {
         case .p50: return .ev3_00
         case .fixed: return .ev0_00
         case .unknown: return .ev0_00
-        @unknown default: return .ev0_00
         }
     }
 }
@@ -166,7 +150,6 @@ extension Mission.CameraExposureMode {
         case .aperturePriority: return .automaticPreferIsoSensitivity
         case .manual: return .manual
         case .unknown: return .automatic
-        @unknown default: return .automatic
         }
     }
 }
@@ -185,7 +168,6 @@ extension Mission.CameraISO {
         case ._12800: return .iso3200
         case ._25600: return .iso3200
         case .unknown: return .iso100
-        @unknown default: return .iso100
         }
     }
 }
@@ -199,7 +181,6 @@ extension Mission.CameraMode {
         case .download: return .photo
         case .broadcast: return .photo
         case .unknown: return .photo
-        @unknown default: return .photo
         }
     }
 }
@@ -215,7 +196,6 @@ extension Mission.CameraPhotoFileFormat {
         case .tiff14bitLinearLowTempResolution: return .jpeg
         case .tiff14bitLinearHighTempResolution: return .jpeg
         case .unknown: return .jpeg
-        @unknown default: return .jpeg
         }
     }
 }
@@ -235,7 +215,6 @@ extension Mission.CameraPhotoMode {
         case .ehdr: return .single
         case .hyperLight: return .single
         case .unknown: return .single
-        @unknown default: return .single
         }
     }
 }
@@ -320,7 +299,6 @@ extension Mission.CameraShutterSpeed {
         case ._25: return .one
         case ._30: return .one
         case .unknown: return .one
-        @unknown default: return .one
         }
     }
 }
@@ -344,7 +322,6 @@ extension Mission.CameraVideoFrameRate {
         case ._120: return .fps120
         case ._8dot7: return .fps9
         case .unknown: return .fps24
-        @unknown default: return .fps24
         }
     }
 }
@@ -376,7 +353,6 @@ extension Mission.CameraVideoResolution {
         case .max: return .resUhd4k
         case .noSSDVideo: return .resUhd4k
         case .unknown: return .resUhd4k
-        @unknown default: return .resUhd4k
         }
     }
 }
@@ -393,7 +369,6 @@ extension Mission.CameraWhiteBalancePreset {
         case .custom: return .custom
         case .neutral: return .daylight
         case .unknown: return .automatic
-        @unknown default: return .automatic
         }
     }
 }

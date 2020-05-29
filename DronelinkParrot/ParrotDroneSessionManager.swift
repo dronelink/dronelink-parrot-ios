@@ -18,7 +18,7 @@ public class ParrotDroneSessionManager: NSObject {
     private var autoConnectionRef: Ref<AutoConnection>?
     private var _session: ParrotDroneSession?
     
-    public override init() {
+    public init(telemetryProvider: ParrotTelemetryProvider) {
         super.init()
         
         autoConnectionRef = groundSdk.getFacility(Facilities.autoConnection) { [weak self] autoConnection in
@@ -27,7 +27,7 @@ public class ParrotDroneSessionManager: NSObject {
                     autoConnection.start()
                 }
                 
-                if (self._session?.id != autoConnection.drone?.uid) {
+                if (self._session?.serialNumber != autoConnection.drone?.uid) {
                     if let session = self._session {
                         session.close()
                         self._session = nil
@@ -35,7 +35,7 @@ public class ParrotDroneSessionManager: NSObject {
                     }
 
                     if let drone = autoConnection.drone {
-                        self._session = ParrotDroneSession(drone: drone)
+                        self._session = ParrotDroneSession(drone: drone, remoteControl: autoConnection.remoteControl, telemetryProvider: telemetryProvider)
                         self.delegates.invoke { $0.onOpened(session: self._session!) }
                     }
                 }
