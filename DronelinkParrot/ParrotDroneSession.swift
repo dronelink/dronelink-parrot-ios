@@ -30,10 +30,16 @@ public class ParrotDroneSession: NSObject {
     private let gimbalCommands = MultiChannelCommandQueue()
     
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var alarmsRef: Ref<Alarms>?
+    private var gpsRef: Ref<Gps>?
+    private var radioRef: Ref<Radio>?
     private var pilotingStateRef: Ref<ManualCopterPilotingItf>?
     private var batteryInfoRef: Ref<BatteryInfo>?
     
     private var _flyingIndicators: DatedValue<FlyingIndicators>?
+    private var _alarms: DatedValue<Alarms>?
+    private var _gps: DatedValue<Gps>?
+    private var _radio: DatedValue<Radio>?
     private var _batteryInfo: DatedValue<BatteryInfo>?
     
     public var flyingIndicators: DatedValue<FlyingIndicators>? { _flyingIndicators }
@@ -59,6 +65,21 @@ public class ParrotDroneSession: NSObject {
                     self.delegates.invoke { $0.onMotorsChanged(session: self, value: value.areMotorsOn) }
                 }
             }
+        }
+        
+        alarmsRef = adapter.drone.getInstrument(Instruments.alarms) { value in
+            guard let value = value else { return }
+            self._alarms = DatedValue<Alarms>(value: value)
+        }
+        
+        gpsRef = adapter.drone.getInstrument(Instruments.gps) { value in
+            guard let value = value else { return }
+            self._gps = DatedValue<Gps>(value: value)
+        }
+        
+        radioRef = adapter.drone.getInstrument(Instruments.radio) { value in
+            guard let value = value else { return }
+            self._radio = DatedValue<Radio>(value: value)
         }
         
         batteryInfoRef = adapter.drone.getInstrument(Instruments.batteryInfo) { value in
@@ -94,6 +115,8 @@ public class ParrotDroneSession: NSObject {
         }
         
         flyingIndicatorsRef = nil
+        gpsRef = nil
+        radioRef = nil
         batteryInfoRef = nil
         
         os_log(.info, log: log, "Drone session closed")
@@ -123,6 +146,34 @@ public class ParrotDroneSession: NSObject {
             }
         }
     }
+    
+    public var status: Mission.Message {
+        guard let state = state?.value, let _ = telemetryProvider.telemetry?.value else {
+            return Mission.Message(title: "ParrotDroneSession.telemetry.unavailable".localized, level: .danger)
+        }
+        
+        if state.location == nil {
+            return Mission.Message(title: "ParrotDroneSession.location.unavailable".localized, level: .warning)
+        }
+        
+        if let alarms = _alarms?.value {
+            for kind in Alarm.Kind.allCases {
+                let alarm = alarms.getAlarm(kind: kind)
+                switch alarm.level {
+                case .notAvailable, .off:
+                    break
+                    
+                case .warning:
+                    return Mission.Message(title: alarm.description, level: .warning)
+                    
+                case .critical:
+                    return Mission.Message(title: alarm.description, level: .danger)
+                }
+            }
+        }
+        
+        return Mission.Message(title: "ParrotDroneSession.ready".localized, level: .info)
+    }
 }
 
 extension ParrotDroneSession: DroneSession {
@@ -137,7 +188,7 @@ extension ParrotDroneSession: DroneSession {
     public var firmwarePackageVersion: String? { nil }
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
-    public var telemetryDelayed: Bool { -(telemetryProvider.telemetry?.date.timeIntervalSinceNow ?? 0) > 1.0 }
+    public var telemetryDelayed: Bool { -(telemetryProvider.telemetry?.date.timeIntervalSinceNow ?? 0) > 10.0 }
     public var disengageReason: Mission.Message? {
         if adapter.flightController == nil {
             return Mission.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
@@ -255,6 +306,11 @@ extension ParrotDroneSession: DroneSession {
         return nil
     }
     
+    public func resetPayloads() {
+        sendResetGimbalCommands()
+        sendResetCameraCommands()
+    }
+    
     public func close() {
         _closed = true
     }
@@ -262,7 +318,16 @@ extension ParrotDroneSession: DroneSession {
 
 extension ParrotDroneSession: DroneStateAdapter {
     public var isFlying: Bool { _flyingIndicators?.value.isFlying ?? false }
-    public var location: CLLocation? { telemetryProvider.telemetry?.value.location }
+    public var location: CLLocation? {
+        let instrumentLocation = _gps?.value.fixed ?? false ? _gps?.value.lastKnownLocation : nil
+        if let location = telemetryProvider.telemetry?.value.location {
+            if location.coordinate.latitude.isNaN || location.coordinate.longitude.isNaN || (location.coordinate.latitude == 0 && location.coordinate.longitude == 0) {
+                return instrumentLocation
+            }
+            return location
+        }
+        return instrumentLocation
+    }
     public var homeLocation: CLLocation? { adapter.returnHomeController?.homeLocation }
     public var lastKnownGroundLocation: CLLocation? { _lastKnownGroundLocation }
     public var takeoffLocation: CLLocation? { isFlying ? (lastKnownGroundLocation ?? homeLocation) : location }
@@ -285,7 +350,12 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         return telemetry.speedDown == 0 ? 0 : -telemetry.speedDown
     }
-    public var altitude: Double { telemetryProvider.telemetry?.value.altitude ?? 0 }
+    public var altitude: Double {
+        if let altitude = telemetryProvider.telemetry?.value.altitude, !altitude.isNaN {
+            return altitude
+        }
+        return 0
+    }
     public var batteryPercent: Double? {
         if let batteryLevel = batteryInfo?.value.batteryLevel {
             return Double(batteryLevel) / 100
@@ -294,4 +364,12 @@ extension ParrotDroneSession: DroneStateAdapter {
     }
     public var obstacleDistance: Double? { return nil }
     public var missionOrientation: Mission.Orientation3 { telemetryProvider.telemetry?.value.droneMissionOrientation ?? Mission.Orientation3() }
+    public var gpsSatellites: Int? { _gps?.value.satelliteCount }
+    public var signalStrength: Double? {
+        guard let rssi = _radio?.value.rssi, rssi != 0 else {
+            return nil
+        }
+        
+        return min(1.0, max(0.0, 1.0 - ((Double(min(-30, max(-80, rssi))) + 30.0) / -50.0)))
+    }
 }

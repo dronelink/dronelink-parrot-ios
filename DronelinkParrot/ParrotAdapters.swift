@@ -235,6 +235,8 @@ extension ParrotCameraAdapter: CameraStateAdapter {
         @unknown default: return .unknown
         }
     }
+    
+    public var lensDetails: String? { nil }
 }
 
 public class ParrotGimbalAdapter: GimbalAdapter {

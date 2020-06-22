@@ -24,3 +24,7 @@
 "ParrotDroneAdapter.startGoHome.unavailable" = "Unable to return home";
 "ParrotDroneAdapter.startGoHome.failed" = "Return home failed";
 "ParrotDroneAdapter.startLanding.unavailable" = "Unable to land";
+
+"ParrotDroneSession.ready" = "All Systems Go";
+"ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
+"ParrotDroneSession.location.unavailable" = "Location Unavailable";

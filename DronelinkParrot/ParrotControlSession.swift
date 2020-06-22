@@ -44,8 +44,9 @@ public class ParrotControlSession: DroneControlSession {
         return nil
     }
     
-    public func activate() -> Bool {
+    public func activate() -> Bool? {
         guard let flightController = droneSession.adapter.flightController else {
+            deactivate()
             return false
         }
         
@@ -75,10 +76,10 @@ public class ParrotControlSession: DroneControlSession {
                     self.deactivate()
                 }
             }
-            return false
+            return nil
             
         case .TakeoffAttempting:
-            return false
+            return nil
             
         case .FlightControllerActivateStart:
             droneSession.adapter.copilotController?.setting.source = .application
@@ -108,9 +109,6 @@ public class ParrotControlSession: DroneControlSession {
     public func deactivate() {
         droneSession.adapter.copilotController?.setting.source = .remoteControl
         droneSession.sendResetVelocityCommand()
-        droneSession.sendResetGimbalCommands()
-        droneSession.sendResetCameraCommands()
-        
         state = .Deactivated
     }
 }

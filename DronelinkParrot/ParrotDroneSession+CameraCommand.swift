@@ -78,7 +78,7 @@ extension ParrotDroneSession {
 
         if let command = cameraCommand as? Mission.ModeCameraCommand {
             adapter.camera.modeSetting.mode = command.mode.parrotValue
-            finished(nil)
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
         
@@ -89,19 +89,19 @@ extension ParrotDroneSession {
 
         if let command = cameraCommand as? Mission.PhotoFileFormatCameraCommand {
             adapter.camera.photoSettings.fileFormat = command.photoFileFormat.parrotValue
-            finished(nil)
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
         if let command = cameraCommand as? Mission.PhotoIntervalCameraCommand {
             adapter.camera.photoSettings.timelapseCaptureInterval = Double(command.photoInterval)
-            finished(nil)
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
         if let command = cameraCommand as? Mission.PhotoModeCameraCommand {
             adapter.camera.photoSettings.mode = command.photoMode.parrotValue
-            finished(nil)
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
@@ -119,7 +119,7 @@ extension ParrotDroneSession {
 
         if let command = cameraCommand as? Mission.ShutterSpeedCameraCommand {
             adapter.camera.exposureSettings.set(mode: .manualShutterSpeed, manualShutterSpeed: command.shutterSpeed.parrotValue, manualIsoSensitivity: nil, maximumIsoSensitivity: nil)
-            finished(nil)
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
@@ -225,7 +225,7 @@ extension ParrotDroneSession {
         if let command = cameraCommand as? Mission.VideoResolutionFrameRateCameraCommand {
             adapter.camera.recordingSettings.framerate = command.videoFrameRate.parrotValue
             adapter.camera.recordingSettings.resolution = command.videoResolution.parrotValue
-            finished(nil)
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
