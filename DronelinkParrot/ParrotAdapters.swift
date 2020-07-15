@@ -261,6 +261,10 @@ public class ParrotGimbalAdapter: GimbalAdapter {
     public func reset() {
         //FIXME
     }
+    
+    public func fineTune(roll: Double) {
+        //FIXME
+    }
 }
 
 extension ParrotGimbalAdapter: GimbalStateAdapter {
