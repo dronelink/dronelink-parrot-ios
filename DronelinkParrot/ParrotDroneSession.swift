@@ -30,6 +30,7 @@ public class ParrotDroneSession: NSObject {
     private let gimbalCommands = MultiChannelCommandQueue()
     
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var geofenceRef: Ref<Geofence>?
     private var alarmsRef: Ref<Alarms>?
     private var gpsRef: Ref<Gps>?
     private var radioRef: Ref<Radio>?
@@ -87,6 +88,11 @@ public class ParrotDroneSession: NSObject {
             self._batteryInfo = DatedValue<BatteryInfo>(value: value)
         }
         
+        geofenceRef = adapter.drone.getPeripheral(Peripherals.geofence) { value in
+            guard let value = value else { return }
+            value.mode.value = .altitude
+        }
+        
         _initialized = true
         delegates.invoke { $0.onInitialized(session: self) }
     }
@@ -115,6 +121,7 @@ public class ParrotDroneSession: NSObject {
         }
         
         flyingIndicatorsRef = nil
+        geofenceRef = nil
         gpsRef = nil
         radioRef = nil
         batteryInfoRef = nil
