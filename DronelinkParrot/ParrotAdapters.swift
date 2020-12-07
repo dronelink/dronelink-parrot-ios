@@ -14,7 +14,8 @@ public class ParrotDroneAdapter: DroneAdapter {
     public let drone: Drone
     public let remoteControl: RemoteControl?
     
-    private let telemetryProvider: ParrotTelemetryProvider
+    private var telemetry: DatedValue<ParrotTelemetry>? { DronelinkParrot.telemetryProvider?.telemetry }
+    
     private var flightControllerRef: Ref<ManualCopterPilotingItf>?
     private var returnHomeControllerRef: Ref<ReturnHomePilotingItf>?
     private var copilotControllerRef: Ref<CopilotDesc.ApiProtocol>?
@@ -36,10 +37,9 @@ public class ParrotDroneAdapter: DroneAdapter {
     public var returnHomeController: ReturnHomePilotingItf? { _returnHomeController }
     public var geoFence: Geofence? { _geoFence }
 
-    public init(drone: Drone, remoteControl: RemoteControl?, telemetryProvider: ParrotTelemetryProvider) {
+    public init(drone: Drone, remoteControl: RemoteControl?) {
         self.drone = drone
         self.remoteControl = remoteControl
-        self.telemetryProvider = telemetryProvider
         
         flightControllerRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] itf in
             self?._flightController = itf
@@ -59,7 +59,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         mainCameraRef = drone.getPeripheral(Peripherals.mainCamera) { [weak self] mainCamera in
             if let mainCamera = mainCamera {
-                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera)
+                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: drone.model.description)
             }
             else {
                 self?.mainCamera = nil
@@ -68,7 +68,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         thermalCameraRef = drone.getPeripheral(Peripherals.thermalCamera) { [weak self] thermalCamera in
             if let thermalCamera = thermalCamera {
-                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera)
+                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: drone.model.description)
             }
             else {
                 self?.thermalCamera = nil
@@ -77,7 +77,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
             if let gimbal = gimbal {
-                self?.gimbal = ParrotGimbalAdapter(gimbal: gimbal, telemetryProvider: telemetryProvider)
+                self?.gimbal = ParrotGimbalAdapter(gimbal: gimbal)
             }
             else {
                 self?.gimbal = nil
@@ -111,7 +111,7 @@ public class ParrotDroneAdapter: DroneAdapter {
     
     public func gimbal(channel: UInt) -> GimbalAdapter? { gimbals?[safeIndex: Int(channel)] }
 
-    public func send(velocityCommand: Mission.VelocityDroneCommand?) {
+    public func send(velocityCommand: Kernel.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
             sendResetVelocityCommand()
             return
@@ -119,7 +119,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         guard
             let flightController = flightController,
-            let telemetry = telemetryProvider.telemetry?.value
+            let telemetry = telemetry?.value
         else {
             return
         }
@@ -127,7 +127,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         //offset the velocity vector by the heading of the drone
         let orientation = telemetry.droneMissionOrientation
         var horizontal = velocityCommand.velocity.horizontal
-        horizontal = Mission.Vector2(direction: horizontal.direction - orientation.yaw, magnitude: horizontal.magnitude)
+        horizontal = Kernel.Vector2(direction: horizontal.direction - orientation.yaw, magnitude: horizontal.magnitude)
         let pitch = -Int(max(-1, min(1, horizontal.x / DronelinkParrot.maxVelocityHorizontal)) * 100)
         let roll = Int(max(-1, min(1, horizontal.y / DronelinkParrot.maxVelocityHorizontal)) * 100)
         let verticalSpeed = Int(max(-1, min(1, velocityCommand.velocity.vertical / flightController.maxVerticalSpeed.value)) * 100)
@@ -144,7 +144,18 @@ public class ParrotDroneAdapter: DroneAdapter {
         flightController.set(roll: roll)
         flightController.set(verticalSpeed: verticalSpeed)
         flightController.set(yawRotationSpeed: Int(rotationalSpeed))
-        NSLog("pitch=\(pitch) roll=\(roll) verticalSpeed=\(verticalSpeed) rotationalSpeed=\(rotationalSpeed)")
+    }
+    
+    public func send(remoteControllerSticksCommand: Kernel.RemoteControllerSticksDroneCommand?) {
+        guard let remoteControllerSticksCommand = remoteControllerSticksCommand else {
+            sendResetVelocityCommand()
+            return
+        }
+        
+        flightController?.set(pitch: Int(remoteControllerSticksCommand.rightStick.y * 100))
+        flightController?.set(roll: Int(remoteControllerSticksCommand.rightStick.x * 100))
+        flightController?.set(verticalSpeed: Int(remoteControllerSticksCommand.leftStick.y * 100))
+        flightController?.set(yawRotationSpeed: Int(remoteControllerSticksCommand.leftStick.x * 100))
     }
 
     public func startGoHome(finished: CommandFinished?) {
@@ -173,14 +184,11 @@ public class ParrotDroneAdapter: DroneAdapter {
 
 public class ParrotCameraAdapter: CameraAdapter {
     public let camera: Camera
+    public let model: String?
     
-    public init(camera: Camera) {
+    public init(camera: Camera, model: String?) {
         self.camera = camera
-    }
-    
-    public var model: String? {
-        //FIXME
-        return nil
+        self.model = model
     }
     
     public var index: UInt { 0 }
@@ -223,12 +231,7 @@ extension ParrotCameraAdapter: CameraStateAdapter {
         return true
     }
     
-    public var missionExposureCompensation: Mission.CameraExposureCompensation {
-        //FIXME
-        return .n00
-    }
-    
-    public var missionMode: Mission.CameraMode {
+    public var mode: Kernel.CameraMode {
         switch camera.modeSetting.mode {
         case .recording: return .video
         case .photo: return .photo
@@ -236,21 +239,55 @@ extension ParrotCameraAdapter: CameraStateAdapter {
         }
     }
     
+    public var photoMode: Kernel.CameraPhotoMode? {
+        //FIXME
+        nil
+    }
+    
+    public var photoInterval: Int? {
+        //FIXME
+        nil
+    }
+    
+    public var exposureCompensation: Kernel.CameraExposureCompensation {
+        //FIXME
+        return .n00
+    }
+    
+    public var iso: Kernel.CameraISO {
+        //FIXME
+        .unknown
+    }
+    
+    public var shutterSpeed: Kernel.CameraShutterSpeed {
+        //FIXME
+        .unknown
+    }
+    
+    public var aperture: Kernel.CameraAperture {
+        //FIXME
+        .unknown
+    }
+    
+    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset {
+        camera.whiteBalanceSettings.mode.kernelValue
+    }
+    
     public var lensDetails: String? { nil }
 }
 
 public class ParrotGimbalAdapter: GimbalAdapter {
-    public let gimbal: Gimbal
-    private let telemetryProvider: ParrotTelemetryProvider
+    private var telemetry: DatedValue<ParrotTelemetry>? { DronelinkParrot.telemetryProvider?.telemetry }
     
-    public init(gimbal: Gimbal, telemetryProvider: ParrotTelemetryProvider) {
+    public let gimbal: Gimbal
+    
+    public init(gimbal: Gimbal) {
         self.gimbal = gimbal
-        self.telemetryProvider = telemetryProvider
     }
     
     public var index: UInt { 0 }
     
-    public func send(velocityCommand: Mission.VelocityGimbalCommand, mode: Mission.GimbalMode) {
+    public func send(velocityCommand: Kernel.VelocityGimbalCommand, mode: Kernel.GimbalMode) {
         gimbal.control(
             mode: .velocity,
             yaw: max(-1, min(1, velocityCommand.velocity.yaw.convertRadiansToDegrees / (gimbal.maxSpeedSettings[GimbalAxis.yaw]?.value ?? 1))),
@@ -268,10 +305,10 @@ public class ParrotGimbalAdapter: GimbalAdapter {
 }
 
 extension ParrotGimbalAdapter: GimbalStateAdapter {
-    public var missionMode: Mission.GimbalMode { .yawFollow }
+    public var mode: Kernel.GimbalMode { .yawFollow }
     
-    public var missionOrientation: Mission.Orientation3 {
-        let gimbalMissionOrientation = telemetryProvider.telemetry?.value.gimbalMissionOrientation
-        return gimbalMissionOrientation ?? Mission.Orientation3()
+    public var orientation: Kernel.Orientation3 {
+        let gimbalMissionOrientation = telemetry?.value.gimbalMissionOrientation
+        return gimbalMissionOrientation ?? Kernel.Orientation3()
     }
 }

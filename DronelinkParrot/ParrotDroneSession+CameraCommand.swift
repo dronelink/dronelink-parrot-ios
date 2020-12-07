@@ -11,22 +11,22 @@ import GroundSdk
 import os
 
 extension ParrotDroneSession {
-    func execute(cameraCommand: MissionCameraCommand, finished: @escaping CommandFinished) -> Error? {
+    func execute(cameraCommand: KernelCameraCommand, finished: @escaping CommandFinished) -> Error? {
         guard let adapter = (adapter.camera(channel: cameraCommand.channel) as? ParrotCameraAdapter) else {
             return "MissionDisengageReason.drone.camera.unavailable.title".localized
         }
         
-        if let command = cameraCommand as? Mission.AEBCountCameraCommand {
+        if let command = cameraCommand as? Kernel.AEBCountCameraCommand {
             adapter.camera.photoSettings.bracketingValue = command.aebCount.parrotValue
             finished(nil)
             return nil
         }
         
-        if cameraCommand is Mission.ApertureCameraCommand {
+        if cameraCommand is Kernel.ApertureCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if let command = cameraCommand as? Mission.AutoExposureLockCameraCommand {
+        if let command = cameraCommand as? Kernel.AutoExposureLockCameraCommand {
             if let exposureLock = adapter.camera.exposureLock {
                 if (command.enabled) {
                     exposureLock.lockOnCurrentValues()
@@ -38,93 +38,93 @@ extension ParrotDroneSession {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if let command = cameraCommand as? Mission.ColorCameraCommand {
+        if let command = cameraCommand as? Kernel.ColorCameraCommand {
             adapter.camera.styleSettings.activeStyle = command.color.parrotValue
             finished(nil)
             return nil
         }
 
-        if let command = cameraCommand as? Mission.ContrastCameraCommand {
+        if let command = cameraCommand as? Kernel.ContrastCameraCommand {
             adapter.camera.styleSettings.contrast.value = Int(command.contrast)
             finished(nil)
             return nil
         }
 
-        if let command = cameraCommand as? Mission.ExposureCompensationCameraCommand {
+        if let command = cameraCommand as? Kernel.ExposureCompensationCameraCommand {
             adapter.camera.exposureCompensationSetting.value = command.exposureCompensation.parrotValue
             finished(nil)
             return nil
         }
 
-        if let command = cameraCommand as? Mission.ExposureModeCameraCommand {
+        if let command = cameraCommand as? Kernel.ExposureModeCameraCommand {
             adapter.camera.exposureSettings.set(mode: command.exposureMode.parrotValue, manualShutterSpeed: nil, manualIsoSensitivity: nil, maximumIsoSensitivity: nil)
             finished(nil)
             return nil
         }
         
-        if cameraCommand is Mission.FileIndexModeCameraCommand {
+        if cameraCommand is Kernel.FileIndexModeCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if cameraCommand is Mission.FocusModeCameraCommand {
+        if cameraCommand is Kernel.FocusModeCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if let command = cameraCommand as? Mission.ISOCameraCommand {
+        if let command = cameraCommand as? Kernel.ISOCameraCommand {
             adapter.camera.exposureSettings.set(mode: .manualIsoSensitivity, manualShutterSpeed: nil, manualIsoSensitivity: command.iso.parrotValue, maximumIsoSensitivity: nil)
             finished(nil)
             return nil
         }
 
-        if let command = cameraCommand as? Mission.ModeCameraCommand {
+        if let command = cameraCommand as? Kernel.ModeCameraCommand {
             adapter.camera.modeSetting.mode = command.mode.parrotValue
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
         
 
-        if cameraCommand is Mission.PhotoAspectRatioCameraCommand {
+        if cameraCommand is Kernel.PhotoAspectRatioCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if let command = cameraCommand as? Mission.PhotoFileFormatCameraCommand {
+        if let command = cameraCommand as? Kernel.PhotoFileFormatCameraCommand {
             adapter.camera.photoSettings.fileFormat = command.photoFileFormat.parrotValue
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
-        if let command = cameraCommand as? Mission.PhotoIntervalCameraCommand {
+        if let command = cameraCommand as? Kernel.PhotoIntervalCameraCommand {
             adapter.camera.photoSettings.timelapseCaptureInterval = Double(command.photoInterval)
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
-        if let command = cameraCommand as? Mission.PhotoModeCameraCommand {
+        if let command = cameraCommand as? Kernel.PhotoModeCameraCommand {
             adapter.camera.photoSettings.mode = command.photoMode.parrotValue
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
-        if let command = cameraCommand as? Mission.SaturationCameraCommand {
+        if let command = cameraCommand as? Kernel.SaturationCameraCommand {
             adapter.camera.styleSettings.saturation.value = Int(command.saturation)
             finished(nil)
             return nil
         }
 
-        if let command = cameraCommand as? Mission.SharpnessCameraCommand {
+        if let command = cameraCommand as? Kernel.SharpnessCameraCommand {
             adapter.camera.styleSettings.sharpness.value = Int(command.sharpness)
             finished(nil)
             return nil
         }
 
-        if let command = cameraCommand as? Mission.ShutterSpeedCameraCommand {
+        if let command = cameraCommand as? Kernel.ShutterSpeedCameraCommand {
             adapter.camera.exposureSettings.set(mode: .manualShutterSpeed, manualShutterSpeed: command.shutterSpeed.parrotValue, manualIsoSensitivity: nil, maximumIsoSensitivity: nil)
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
-        if cameraCommand is Mission.StartCaptureCameraCommand {
-            switch adapter.missionMode {
+        if cameraCommand is Kernel.StartCaptureCameraCommand {
+            switch adapter.mode {
             case .photo:
                 if adapter.isCapturingPhotoInterval {
                     os_log(.debug, log: log, "Camera start capture skipped, already shooting interval photos")
@@ -160,14 +160,14 @@ extension ParrotDroneSession {
                 break
 
             default:
-                os_log(.info, log: log, "Camera start capture invalid mode: %d", adapter.missionMode.parrotValue.rawValue)
+                os_log(.info, log: log, "Camera start capture invalid mode: %d", adapter.mode.parrotValue.rawValue)
                 return "MissionDisengageReason.drone.camera.mode.invalid.title".localized
             }
             return nil
         }
 
-        if cameraCommand is Mission.StopCaptureCameraCommand {
-            switch adapter.missionMode {
+        if cameraCommand is Kernel.StopCaptureCameraCommand {
+            switch adapter.mode {
             case .photo:
                 if adapter.isCapturingPhotoInterval {
                     if adapter.camera.canStopPhotoCapture {
@@ -203,44 +203,44 @@ extension ParrotDroneSession {
                 break
 
             default:
-                os_log(.info, log: log, "Camera stop capture skipped, invalid mode: %d", adapter.missionMode.parrotValue.rawValue)
+                os_log(.info, log: log, "Camera stop capture skipped, invalid mode: %d", adapter.mode.parrotValue.rawValue)
                 finished(nil)
                 break
             }
             return nil
         }
 
-        if cameraCommand is Mission.StorageLocationCameraCommand {
+        if cameraCommand is Kernel.StorageLocationCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if cameraCommand is Mission.VideoFileCompressionStandardCameraCommand {
+        if cameraCommand is Kernel.VideoFileCompressionStandardCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if cameraCommand is Mission.VideoFileFormatCameraCommand {
+        if cameraCommand is Kernel.VideoFileFormatCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if let command = cameraCommand as? Mission.VideoResolutionFrameRateCameraCommand {
+        if let command = cameraCommand as? Kernel.VideoResolutionFrameRateCameraCommand {
             adapter.camera.recordingSettings.framerate = command.videoFrameRate.parrotValue
             adapter.camera.recordingSettings.resolution = command.videoResolution.parrotValue
             DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { finished(nil) }
             return nil
         }
 
-        if cameraCommand is Mission.VideoStandardCameraCommand {
+        if cameraCommand is Kernel.VideoStandardCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
 
-        if let command = cameraCommand as? Mission.WhiteBalanceCustomCameraCommand {
+        if let command = cameraCommand as? Kernel.WhiteBalanceCustomCameraCommand {
             adapter.camera.whiteBalanceSettings.mode = .custom
             adapter.camera.whiteBalanceSettings.customTemperature = CameraWhiteBalanceTemperature(rawValue: Int(command.whiteBalanceCustom)) ?? .k10000
             finished(nil)
             return nil
         }
 
-        if let command = cameraCommand as? Mission.WhiteBalancePresetCameraCommand {
+        if let command = cameraCommand as? Kernel.WhiteBalancePresetCameraCommand {
             adapter.camera.whiteBalanceSettings.mode = command.whiteBalancePreset.parrotValue
             finished(nil)
             return nil

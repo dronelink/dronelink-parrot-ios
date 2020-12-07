@@ -16,6 +16,7 @@ extension DronelinkParrot {
 
 public class DronelinkParrot {
     public static var maxVelocityHorizontal: Double { 10.0 }
+    public static var telemetryProvider: ParrotTelemetryProvider?
 }
 
 extension FlyingIndicators {
@@ -49,7 +50,7 @@ extension FlyingIndicators {
     }
 }
 
-extension Mission.CameraAEBCount {
+extension Kernel.CameraAEBCount {
     var parrotValue: CameraBracketingValue {
         switch self {
         case ._3: return .preset1ev
@@ -60,7 +61,7 @@ extension Mission.CameraAEBCount {
     }
 }
 
-extension Mission.CameraColor {
+extension Kernel.CameraColor {
     var parrotValue: CameraStyle {
         switch self {
         case .none: return .standard
@@ -102,7 +103,7 @@ extension Mission.CameraColor {
     }
 }
 
-extension Mission.CameraExposureCompensation {
+extension Kernel.CameraExposureCompensation {
     var parrotValue: CameraEvCompensation {
         switch self {
         case .n50: return .evMinus3_00
@@ -142,7 +143,7 @@ extension Mission.CameraExposureCompensation {
     }
 }
 
-extension Mission.CameraExposureMode {
+extension Kernel.CameraExposureMode {
     var parrotValue: CameraExposureMode {
         switch self {
         case .program: return .automatic
@@ -154,7 +155,7 @@ extension Mission.CameraExposureMode {
     }
 }
 
-extension Mission.CameraISO {
+extension Kernel.CameraISO {
     var parrotValue: CameraIso {
         switch self {
         case .auto: return .iso100
@@ -172,7 +173,7 @@ extension Mission.CameraISO {
     }
 }
 
-extension Mission.CameraMode {
+extension Kernel.CameraMode {
     var parrotValue: CameraMode {
         switch self {
         case .photo: return .photo
@@ -185,7 +186,7 @@ extension Mission.CameraMode {
     }
 }
 
-extension Mission.CameraPhotoFileFormat {
+extension Kernel.CameraPhotoFileFormat {
     var parrotValue: CameraPhotoFileFormat {
         switch self {
         case .raw: return .dng
@@ -200,7 +201,7 @@ extension Mission.CameraPhotoFileFormat {
     }
 }
 
-extension Mission.CameraPhotoMode {
+extension Kernel.CameraPhotoMode {
     var parrotValue: CameraPhotoMode {
         switch self {
         case .single: return .single
@@ -219,7 +220,7 @@ extension Mission.CameraPhotoMode {
     }
 }
 
-extension Mission.CameraShutterSpeed {
+extension Kernel.CameraShutterSpeed {
     var parrotValue: CameraShutterSpeed {
         switch self {
         case ._1_8000: return .oneOver8000
@@ -303,7 +304,7 @@ extension Mission.CameraShutterSpeed {
     }
 }
 
-extension Mission.CameraVideoFrameRate {
+extension Kernel.CameraVideoFrameRate {
     var parrotValue: CameraRecordingFramerate {
         switch self {
         case ._23dot976: return .fps24
@@ -326,7 +327,7 @@ extension Mission.CameraVideoFrameRate {
     }
 }
 
-extension Mission.CameraVideoResolution {
+extension Kernel.CameraVideoResolution {
     var parrotValue: CameraRecordingResolution {
         switch self {
         case ._336x256: return .res480p
@@ -357,7 +358,7 @@ extension Mission.CameraVideoResolution {
     }
 }
 
-extension Mission.CameraWhiteBalancePreset {
+extension Kernel.CameraWhiteBalancePreset {
     var parrotValue: CameraWhiteBalanceMode {
         switch self {
         case .auto: return .automatic
@@ -371,4 +372,42 @@ extension Mission.CameraWhiteBalancePreset {
         case .unknown: return .automatic
         }
     }
+}
+
+extension CameraWhiteBalanceMode {
+    var kernelValue: Kernel.CameraWhiteBalancePreset {
+        //TODO add unknowns to kernel
+        switch self {
+        case .automatic: return .auto
+        case .candle: return .unknown
+        case .sunset: return .unknown
+        case .incandescent: return .unknown
+        case .warmWhiteFluorescent: return .unknown
+        case .halogen: return .unknown
+        case .fluorescent: return .unknown
+        case .coolWhiteFluorescent: return .unknown
+        case .flash: return .unknown
+        case .daylight: return .unknown
+        case .sunny: return .sunny
+        case .cloudy: return .cloudy
+        case .snow: return .unknown
+        case .hazy: return .unknown
+        case .shaded: return .unknown
+        case .greenFoliage: return .unknown
+        case .blueSky: return .unknown
+        case .custom: return .custom
+        }
+    }
+}
+
+extension FlyingIndicatorsState {
+    var display: String { "FlyingIndicatorsState.value.\(rawValue)".localized }
+}
+
+extension FlyingIndicatorsFlyingState {
+    var display: String { "FlyingIndicatorsFlyingState.value.\(rawValue)".localized }
+}
+
+extension FlyingIndicatorsLandedState {
+    var display: String { "FlyingIndicatorsLandedState.value.\(rawValue)".localized }
 }

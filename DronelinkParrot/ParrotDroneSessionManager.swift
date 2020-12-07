@@ -18,7 +18,7 @@ public class ParrotDroneSessionManager: NSObject {
     private var autoConnectionRef: Ref<AutoConnection>?
     private var _session: ParrotDroneSession?
     
-    public init(telemetryProvider: ParrotTelemetryProvider) {
+    public override init() {
         super.init()
         
         autoConnectionRef = groundSdk.getFacility(Facilities.autoConnection) { [weak self] autoConnection in
@@ -35,7 +35,7 @@ public class ParrotDroneSessionManager: NSObject {
                     }
 
                     if let drone = autoConnection.drone {
-                        self._session = ParrotDroneSession(drone: drone, remoteControl: autoConnection.remoteControl, telemetryProvider: telemetryProvider)
+                        self._session = ParrotDroneSession(drone: drone, remoteControl: autoConnection.remoteControl)
                         self.delegates.invoke { $0.onOpened(session: self._session!) }
                     }
                 }
@@ -58,4 +58,9 @@ extension ParrotDroneSessionManager: DroneSessionManager {
     }
     
     public var session: DroneSession? { _session }
+    
+    public var statusMessages: [Kernel.Message]? {
+        //FIXME session?.state?.value.statusMessages
+        nil
+    }
 }

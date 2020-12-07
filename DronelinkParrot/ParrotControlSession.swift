@@ -25,20 +25,20 @@ public class ParrotControlSession: DroneControlSession {
     private let droneSession: ParrotDroneSession
     
     private var state = State.TakeoffStart
-    private var attemptDisengageReason: Mission.Message?
+    private var attemptDisengageReason: Kernel.Message?
     
     public init(droneSession: ParrotDroneSession) {
         self.droneSession = droneSession
     }
     
-    public var disengageReason: Mission.Message? {
+    public var disengageReason: Kernel.Message? {
         if let attemptDisengageReason = attemptDisengageReason {
             return attemptDisengageReason
         }
         
         let state = droneSession.adapter.flightController?.state ?? .unavailable
         if self.state == .FlightControllerActivateComplete && state != .active {
-            return Mission.Message(title: "MissionDisengageReason.drone.control.override.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized)
         }
         
         return nil
@@ -58,7 +58,7 @@ public class ParrotControlSession: DroneControlSession {
             }
             
             if !flightController.canTakeOff {
-                self.attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.off.failed.title".localized)
+                self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized)
                 self.deactivate()
                 return false
             }
@@ -72,7 +72,7 @@ public class ParrotControlSession: DroneControlSession {
                     self.state = .FlightControllerActivateStart
                 }
                 else {
-                    self.attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.off.failed.title".localized)
+                    self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized)
                     self.deactivate()
                 }
             }
@@ -94,7 +94,7 @@ public class ParrotControlSession: DroneControlSession {
                 state = .FlightControllerActivateComplete
                 return activate()
             }
-            attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.control.failed.title".localized)
+            attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.control.failed.title".localized)
             deactivate()
             return false
 

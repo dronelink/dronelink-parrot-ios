@@ -8,16 +8,16 @@
 import DronelinkCore
 
 extension ParrotDroneSession {
-    func execute(gimbalCommand: MissionGimbalCommand, finished: @escaping CommandFinished) -> Error? {
+    func execute(gimbalCommand: KernelGimbalCommand, finished: @escaping CommandFinished) -> Error? {
         guard let adapter = (adapter.gimbal(channel: gimbalCommand.channel) as? ParrotGimbalAdapter) else {
             return "MissionDisengageReason.drone.gimbal.unavailable.title".localized
         }
         
-        if gimbalCommand is Mission.ModeGimbalCommand {
+        if gimbalCommand is Kernel.ModeGimbalCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
         
-        if let command = gimbalCommand as? Mission.OrientationGimbalCommand {
+        if let command = gimbalCommand as? Kernel.OrientationGimbalCommand {
             if (command.orientation.pitch == nil && command.orientation.roll == nil && command.orientation.yaw == nil) {
                 finished(nil)
                 return nil

@@ -14,8 +14,9 @@ import CoreLocation
 public class ParrotDroneSession: NSObject {
     internal let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneSession")
     
-    public let telemetryProvider: ParrotTelemetryProvider
     public let adapter: ParrotDroneAdapter
+    
+    private var telemetry: DatedValue<ParrotTelemetry>? { DronelinkParrot.telemetryProvider?.telemetry }
     
     private let _opened = Date()
     private var _closed = false
@@ -46,9 +47,8 @@ public class ParrotDroneSession: NSObject {
     public var flyingIndicators: DatedValue<FlyingIndicators>? { _flyingIndicators }
     public var batteryInfo: DatedValue<BatteryInfo>? { _batteryInfo }
     
-    public init(drone: Drone, remoteControl: RemoteControl?, telemetryProvider: ParrotTelemetryProvider) {
-        self.telemetryProvider = telemetryProvider
-        adapter = ParrotDroneAdapter(drone: drone, remoteControl: remoteControl, telemetryProvider: telemetryProvider)
+    public init(drone: Drone, remoteControl: RemoteControl?) {
+        adapter = ParrotDroneAdapter(drone: drone, remoteControl: remoteControl)
         super.init()
         initDrone()
         Thread.detachNewThread(self.execute)
@@ -100,7 +100,7 @@ public class ParrotDroneSession: NSObject {
     
     private func execute() {
         while !_closed {
-            if let location = telemetryProvider.telemetry?.value.location {
+            if let location = location {
                 if (!_located) {
                     _located = true
                     DispatchQueue.global().async {
@@ -153,39 +153,11 @@ public class ParrotDroneSession: NSObject {
             }
         }
     }
-    
-    public var status: Mission.Message {
-        guard let state = state?.value, let _ = telemetryProvider.telemetry?.value else {
-            return Mission.Message(title: "ParrotDroneSession.telemetry.unavailable".localized, level: .danger)
-        }
-        
-        if state.location == nil {
-            return Mission.Message(title: "ParrotDroneSession.location.unavailable".localized, level: .warning)
-        }
-        
-        if let alarms = _alarms?.value {
-            for kind in Alarm.Kind.allCases {
-                let alarm = alarms.getAlarm(kind: kind)
-                switch alarm.level {
-                case .notAvailable, .off:
-                    break
-                    
-                case .warning:
-                    return Mission.Message(title: alarm.description, level: .warning)
-                    
-                case .critical:
-                    return Mission.Message(title: alarm.description, level: .danger)
-                }
-            }
-        }
-        
-        return Mission.Message(title: "ParrotDroneSession.ready".localized, level: .info)
-    }
 }
 
 extension ParrotDroneSession: DroneSession {
     public var drone: DroneAdapter { adapter }
-    public var state: DatedValue<DroneStateAdapter>? { DatedValue(value: self, date: telemetryProvider.telemetry?.date ?? Date()) }
+    public var state: DatedValue<DroneStateAdapter>? { DatedValue(value: self, date: telemetry?.date ?? Date()) }
     public var opened: Date { _opened }
     public var id: String { _id }
     public var manufacturer: String { "Parrot" }
@@ -195,18 +167,18 @@ extension ParrotDroneSession: DroneSession {
     public var firmwarePackageVersion: String? { nil }
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
-    public var telemetryDelayed: Bool { -(telemetryProvider.telemetry?.date.timeIntervalSinceNow ?? 0) > 10.0 }
-    public var disengageReason: Mission.Message? {
+    public var telemetryDelayed: Bool { -(telemetry?.date.timeIntervalSinceNow ?? 0) > 10.0 }
+    public var disengageReason: Kernel.Message? {
         if adapter.flightController == nil {
-            return Mission.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
         }
         
-        if telemetryProvider.telemetry == nil {
-            return Mission.Message(title: "MissionDisengageReason.telemetry.unavailable.title".localized)
+        if state?.value == nil {
+            return Kernel.Message(title: "MissionDisengageReason.telemetry.unavailable.title".localized)
         }
         
         if telemetryDelayed {
-            return Mission.Message(title: "MissionDisengageReason.telemetry.delayed.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.telemetry.delayed.title".localized)
         }
         
         return nil
@@ -230,9 +202,9 @@ extension ParrotDroneSession: DroneSession {
         delegates.remove(delegate)
     }
     
-    public func add(command: MissionCommand) throws {
-        if let command = command as? MissionDroneCommand {
-            droneCommands.add(command: Command(
+    public func add(command: KernelCommand) throws {
+        if let command = command as? KernelDroneCommand {
+            try droneCommands.add(command: Command(
                 id: command.id,
                 name: command.type.rawValue,
                 execute: { finished in
@@ -247,8 +219,8 @@ extension ParrotDroneSession: DroneSession {
             return
         }
 
-        if let command = command as? MissionCameraCommand {
-            cameraCommands.add(channel: command.channel, command: Command(
+        if let command = command as? KernelCameraCommand {
+            try cameraCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
                 execute: {
@@ -263,8 +235,8 @@ extension ParrotDroneSession: DroneSession {
             return
         }
 
-        if let command = command as? MissionGimbalCommand {
-            gimbalCommands.add(channel: command.channel, command: Command(
+        if let command = command as? KernelGimbalCommand {
+            try gimbalCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
                 execute: {
@@ -282,11 +254,11 @@ extension ParrotDroneSession: DroneSession {
         throw DroneSessionError.commandTypeUnhandled
     }
     
-    private func commandExecuted(command: MissionCommand) {
+    private func commandExecuted(command: KernelCommand) {
         self.delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
     }
     
-    private func commandFinished(command: MissionCommand, error: Error?) {
+    private func commandFinished(command: KernelCommand, error: Error?) {
         self.delegates.invoke { $0.onCommandFinished(session: self, command: command, error: error) }
     }
     
@@ -309,7 +281,7 @@ extension ParrotDroneSession: DroneSession {
     }
     
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
-        //FIXME
+        //TODO
         return nil
     }
     
@@ -324,10 +296,88 @@ extension ParrotDroneSession: DroneSession {
 }
 
 extension ParrotDroneSession: DroneStateAdapter {
+    public var statusMessages: [Kernel.Message]? {
+        var messages: [Kernel.Message] = []
+        
+        if let state = state?.value {
+            if state.location == nil {
+                messages.append(Kernel.Message(title: "ParrotDroneSession.location.unavailable".localized, level: .warning))
+            }
+        }
+        else {
+            messages.append(Kernel.Message(title: "ParrotDroneSession.telemetry.unavailable".localized, level: .danger))
+        }
+        
+        if let state = flyingIndicators?.value.state {
+            switch state {
+            case .landed:
+                switch flyingIndicators?.value.landedState ?? .none {
+                case .none, .idle, .waitingUserAction:
+                    break
+                    
+                case .initializing, .motorRamping:
+                    
+                    break
+                }
+                break
+                
+            case .flying:
+                switch flyingIndicators?.value.flyingState ?? .none {
+                case .none, .waiting, .flying:
+                    break
+                    
+                case .takingOff, .landing:
+                    messages.append(Kernel.Message(title: state.display, level: .warning))
+                    break
+                }
+                break
+                
+            case .emergencyLanding, .emergency:
+                messages.append(Kernel.Message(title: state.display, level: .danger))
+                break
+            }
+        }
+        
+        if let alarms = _alarms?.value {
+            for kind in Alarm.Kind.allCases {
+                let alarm = alarms.getAlarm(kind: kind)
+                switch alarm.level {
+                case .notAvailable, .off:
+                    break
+                    
+                case .warning:
+                    messages.append(Kernel.Message(title: alarm.description, level: .warning))
+                    break
+                    
+                case .critical:
+                    messages.append(Kernel.Message(title: alarm.description, level: .danger))
+                    break
+                }
+            }
+        }
+        
+        return messages
+    }
+    public var mode: String? {
+        guard let state = flyingIndicators?.value.state else {
+            return nil
+        }
+        
+        switch state {
+        case .landed:
+            return flyingIndicators?.value.landedState.display
+            
+        case .flying:
+            return flyingIndicators?.value.flyingState.display
+            
+        case .emergencyLanding, .emergency:
+            return state.display
+        }
+    }
     public var isFlying: Bool { _flyingIndicators?.value.isFlying ?? false }
     public var location: CLLocation? {
         let instrumentLocation = _gps?.value.fixed ?? false ? _gps?.value.lastKnownLocation : nil
-        if let location = telemetryProvider.telemetry?.value.location {
+        if let location = telemetry?.value.location {
             if location.coordinate.latitude.isNaN || location.coordinate.longitude.isNaN || (location.coordinate.latitude == 0 && location.coordinate.longitude == 0) {
                 return instrumentLocation
             }
@@ -338,27 +388,27 @@ extension ParrotDroneSession: DroneStateAdapter {
     public var homeLocation: CLLocation? { adapter.returnHomeController?.homeLocation }
     public var lastKnownGroundLocation: CLLocation? { _lastKnownGroundLocation }
     public var takeoffLocation: CLLocation? { isFlying ? (lastKnownGroundLocation ?? homeLocation) : location }
-    public var takeoffAltitude: Double? { telemetryProvider.telemetry?.value.takeoffAltitude }
+    public var takeoffAltitude: Double? { telemetry?.value.takeoffAltitude }
     public var course: Double {
-        guard let telemetry = telemetryProvider.telemetry?.value else {
+        guard let telemetry = telemetry?.value else {
             return 0
         }
         return atan2(telemetry.speedNorth, telemetry.speedEast)
     }
     public var horizontalSpeed: Double {
-        guard let telemetry = telemetryProvider.telemetry?.value else {
+        guard let telemetry = telemetry?.value else {
             return 0
         }
         return sqrt(pow(telemetry.speedNorth, 2) + pow(telemetry.speedEast, 2))
     }
     public var verticalSpeed: Double {
-        guard let telemetry = telemetryProvider.telemetry?.value else {
+        guard let telemetry = telemetry?.value else {
             return 0
         }
         return telemetry.speedDown == 0 ? 0 : -telemetry.speedDown
     }
     public var altitude: Double {
-        if let altitude = telemetryProvider.telemetry?.value.altitude, !altitude.isNaN {
+        if let altitude = telemetry?.value.altitude, !altitude.isNaN {
             return altitude
         }
         return 0
@@ -369,14 +419,18 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         return nil
     }
-    public var obstacleDistance: Double? { return nil }
-    public var missionOrientation: Mission.Orientation3 { telemetryProvider.telemetry?.value.droneMissionOrientation ?? Mission.Orientation3() }
+    public var obstacleDistance: Double? { nil }
+    public var orientation: Kernel.Orientation3 { telemetry?.value.droneMissionOrientation ?? Kernel.Orientation3() }
     public var gpsSatellites: Int? { _gps?.value.satelliteCount }
-    public var signalStrength: Double? {
+    public var downlinkSignalStrength: Double? { nil }
+    public var uplinkSignalStrength: Double? {
         guard let rssi = _radio?.value.rssi, rssi != 0 else {
             return nil
         }
         
         return min(1.0, max(0.0, 1.0 - ((Double(min(-30, max(-80, rssi))) + 30.0) / -50.0)))
+    }
+    public var signalStrength: Double? {
+        uplinkSignalStrength //FIXME remove
     }
 }

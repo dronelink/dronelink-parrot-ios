@@ -25,6 +25,25 @@
 "ParrotDroneAdapter.startGoHome.failed" = "Return home failed";
 "ParrotDroneAdapter.startLanding.unavailable" = "Unable to land";
 
-"ParrotDroneSession.ready" = "All Systems Go";
 "ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 "ParrotDroneSession.location.unavailable" = "Location Unavailable";
+
+"FlyingIndicatorsState.title" = "State";
+"FlyingIndicatorsState.value.0" = "Landed";
+"FlyingIndicatorsState.value.1" = "flying";
+"FlyingIndicatorsState.value.2" = "Emergency Landing";
+"FlyingIndicatorsState.value.3" = "Emergency";
+
+"FlyingIndicatorsLandedState.title" = "Landed State";
+"FlyingIndicatorsLandedState.value.0" = "None";
+"FlyingIndicatorsLandedState.value.1" = "Initializing";
+"FlyingIndicatorsLandedState.value.2" = "Idle";
+"FlyingIndicatorsLandedState.value.3" = "MotorRamping";
+"FlyingIndicatorsLandedState.value.3" = "Waiting";
+
+"FlyingIndicatorsFlyingState.title" = "Landed State";
+"FlyingIndicatorsFlyingState.value.0" = "None";
+"FlyingIndicatorsFlyingState.value.1" = "Taking Off";
+"FlyingIndicatorsFlyingState.value.2" = "Landing";
+"FlyingIndicatorsFlyingState.value.3" = "Waiting";
+"FlyingIndicatorsFlyingState.value.3" = "Flying";
