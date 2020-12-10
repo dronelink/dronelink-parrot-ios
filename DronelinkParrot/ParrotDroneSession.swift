@@ -183,6 +183,7 @@ extension ParrotDroneSession: DroneSession {
         
         return nil
     }
+    public var rtkManager: RTKManager? { nil }
     
     public func identify(id: String) { _id = id }
     
@@ -429,8 +430,5 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         
         return min(1.0, max(0.0, 1.0 - ((Double(min(-30, max(-80, rssi))) + 30.0) / -50.0)))
-    }
-    public var signalStrength: Double? {
-        uplinkSignalStrength //FIXME remove
     }
 }
