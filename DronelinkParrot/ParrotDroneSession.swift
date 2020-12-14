@@ -420,9 +420,17 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         return nil
     }
+    public var lowBatteryThreshold: Double? { 0.2 }
     public var obstacleDistance: Double? { nil }
     public var orientation: Kernel.Orientation3 { telemetry?.value.droneMissionOrientation ?? Kernel.Orientation3() }
     public var gpsSatellites: Int? { _gps?.value.satelliteCount }
+    public var gpsSignalStrength: Double? {
+        guard let gpsSatellites = gpsSatellites else {
+            return nil
+        }
+        
+        return min(1.0, Double(gpsSatellites) / 10)
+    }
     public var downlinkSignalStrength: Double? { nil }
     public var uplinkSignalStrength: Double? {
         guard let rssi = _radio?.value.rssi, rssi != 0 else {

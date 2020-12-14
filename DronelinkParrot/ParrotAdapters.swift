@@ -226,9 +226,10 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var isSDCardInserted: Bool { return true }
     public var mode: Kernel.CameraMode { camera.modeSetting.mode.kernelValue }
     public var photoMode: Kernel.CameraPhotoMode? { camera.photoSettings.mode.kernelValue }
-    public var photoInterval: Int? { Int(camera.photoSettings.timelapseCaptureInterval) }
     public var burstCount: Kernel.CameraBurstCount? { camera.photoSettings.burstValue.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? { camera.photoSettings.bracketingValue.kernelValue }
+    public var photoInterval: Int? { Int(camera.photoSettings.timelapseCaptureInterval) }
+    public var currentVideoTime: Double? { camera.recordingState.functionState == .started ? camera.recordingState.getDuration() : nil }
     public var exposureCompensation: Kernel.CameraExposureCompensation { camera.exposureCompensationSetting.value.kernelValue }
     public var iso: Kernel.CameraISO { camera.exposureSettings.manualIsoSensitivity.kernelValue }
     public var shutterSpeed: Kernel.CameraShutterSpeed { camera.exposureSettings.manualShutterSpeed.kernelValue }
