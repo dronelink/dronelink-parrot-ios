@@ -290,6 +290,9 @@ extension Kernel.CameraPhotoMode {
         case .ehdr: return .single
         case .hyperLight: return .single
         case .unknown: return .single
+        case .highResolution: return .single
+        case .smart: return .single
+        case .internalAISpotChecking: return .single
         }
     }
 }
