@@ -197,8 +197,9 @@ public class ParrotCameraAdapter: CameraAdapter {
 
 extension ParrotCameraAdapter: CameraStateAdapter {
     public var isBusy: Bool { false }
-    public var isCapturing: Bool { isCapturingVideo || isCapturingPhotoInterval }
-    public var isCapturingPhotoInterval: Bool {
+    public var isCapturing: Bool { isCapturingVideo || isCapturingPhoto }
+    public var isCapturingPhotoInterval: Bool { mode == .photo && photoMode == .interval && isCapturingPhoto }
+    public var isCapturingPhoto: Bool {
         switch camera.modeSetting.mode {
         case .recording: return false
         case .photo:
@@ -226,6 +227,7 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     }
     public var isCapturingContinuous: Bool { isCapturingVideo || isCapturingPhotoInterval }
     public var isSDCardInserted: Bool { return true }
+    public var storageLocation: Kernel.CameraStorageLocation { .sdCard }
     public var mode: Kernel.CameraMode { camera.modeSetting.mode.kernelValue }
     public var photoMode: Kernel.CameraPhotoMode? { camera.photoSettings.mode.kernelValue }
     public var burstCount: Kernel.CameraBurstCount? { camera.photoSettings.burstValue.kernelValue }
