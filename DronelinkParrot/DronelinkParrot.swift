@@ -286,7 +286,6 @@ extension Kernel.CameraPhotoMode {
         case .rawBurst: return .burst
         case .shallowFocus: return .single
         case .panorama: return .single
-        case .cameraPanorama: return .single
         case .ehdr: return .single
         case .hyperLight: return .single
         case .unknown: return .single
