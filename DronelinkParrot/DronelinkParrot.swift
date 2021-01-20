@@ -61,6 +61,20 @@ extension Kernel.CameraAEBCount {
     }
 }
 
+extension CameraBracketingValue {
+    var kernelValue: Kernel.CameraAEBCount {
+        switch self {
+        case .preset1ev: return ._3
+        case .preset2ev: return ._3
+        case .preset3ev: return ._3
+        case .preset1ev2ev: return ._5
+        case .preset1ev3ev: return ._5
+        case .preset2ev3ev: return ._5
+        case .preset1ev2ev3ev: return ._7
+        }
+    }
+}
+
 extension Kernel.CameraColor {
     var parrotValue: CameraStyle {
         switch self {
@@ -143,6 +157,32 @@ extension Kernel.CameraExposureCompensation {
     }
 }
 
+extension CameraEvCompensation {
+    var kernelValue: Kernel.CameraExposureCompensation {
+        switch self {
+        case .evMinus3_00: return .n30
+        case .evMinus2_67: return .n27
+        case .evMinus2_33: return .n23
+        case .evMinus2_00: return .n20
+        case .evMinus1_67: return .n17
+        case .evMinus1_33: return .n13
+        case .evMinus1_00: return .n10
+        case .evMinus0_67: return .n07
+        case .evMinus0_33: return .n03
+        case .ev0_00: return .n00
+        case .ev0_33: return .p03
+        case .ev0_67: return .p07
+        case .ev1_00: return .p10
+        case .ev1_33: return .p13
+        case .ev1_67: return .p17
+        case .ev2_00: return .p20
+        case .ev2_33: return .p23
+        case .ev2_67: return .p27
+        case .ev3_00: return .p30
+        }
+    }
+}
+
 extension Kernel.CameraExposureMode {
     var parrotValue: CameraExposureMode {
         switch self {
@@ -173,6 +213,30 @@ extension Kernel.CameraISO {
     }
 }
 
+extension CameraIso {
+    var kernelValue: Kernel.CameraISO {
+        switch self {
+        case .iso50: return ._100
+        case .iso64: return ._100
+        case .iso80: return ._100
+        case .iso100: return ._100
+        case .iso125: return ._100
+        case .iso160: return ._100
+        case .iso200: return ._200
+        case .iso250: return ._200
+        case .iso320: return ._200
+        case .iso400: return ._400
+        case .iso500: return ._400
+        case .iso640: return ._400
+        case .iso800: return ._800
+        case .iso1200: return ._800
+        case .iso1600: return ._1600
+        case .iso2500: return ._1600
+        case .iso3200: return ._3200
+        }
+    }
+}
+
 extension Kernel.CameraMode {
     var parrotValue: CameraMode {
         switch self {
@@ -182,6 +246,15 @@ extension Kernel.CameraMode {
         case .download: return .photo
         case .broadcast: return .photo
         case .unknown: return .photo
+        }
+    }
+}
+
+extension CameraMode {
+    var kernelValue: Kernel.CameraMode {
+        switch self {
+        case .recording: return .video
+        case .photo: return .photo
         }
     }
 }
@@ -219,6 +292,34 @@ extension Kernel.CameraPhotoMode {
         case .highResolution: return .single
         case .smart: return .single
         case .internalAISpotChecking: return .single
+        }
+    }
+}
+
+extension CameraPhotoMode {
+    var kernelValue: Kernel.CameraPhotoMode {
+        switch self {
+        case .single: return .single
+        case .bracketing: return .aeb
+        case .burst: return .burst
+        case .timeLapse: return .interval
+        case .gpsLapse: return .unknown
+        }
+    }
+}
+
+extension CameraBurstValue {
+    var kernelValue: Kernel.CameraBurstCount {
+        switch self {
+        case .burst14Over4s: return ._14
+        case .burst14Over2s: return ._14
+        case .burst14Over1s: return ._14
+        case .burst10Over4s: return ._10
+        case .burst10Over2s: return ._10
+        case .burst10Over1s: return ._10
+        case .burst4Over4s: return ._5
+        case .burst4Over2s: return ._5
+        case .burst4Over1s: return ._5
         }
     }
 }
@@ -303,6 +404,49 @@ extension Kernel.CameraShutterSpeed {
         case ._25: return .one
         case ._30: return .one
         case .unknown: return .one
+        }
+    }
+}
+
+extension CameraShutterSpeed {
+    var kernelValue: Kernel.CameraShutterSpeed {
+        switch self {
+        case .oneOver10000: return ._1_8000
+        case .oneOver8000: return ._1_8000
+        case .oneOver6400: return ._1_6400
+        case .oneOver5000: return ._1_5000
+        case .oneOver4000: return ._1_4000
+        case .oneOver3200: return ._1_3200
+        case .oneOver2500: return ._1_2500
+        case .oneOver2000: return ._1_2000
+        case .oneOver1600: return ._1_1600
+        case .oneOver1250: return ._1_1250
+        case .oneOver1000: return ._1_1000
+        case .oneOver800: return ._1_800
+        case .oneOver640: return ._1_640
+        case .oneOver500: return ._1_500
+        case .oneOver400: return ._1_400
+        case .oneOver320: return ._1_320
+        case .oneOver240: return ._1_240
+        case .oneOver200: return ._1_200
+        case .oneOver160: return ._1_160
+        case .oneOver120: return ._1_120
+        case .oneOver100: return ._1_100
+        case .oneOver60: return ._1_60
+        case .oneOver80: return ._1_80
+        case .oneOver50: return ._1_50
+        case .oneOver40: return ._1_40
+        case .oneOver30: return ._1_30
+        case .oneOver25: return ._1_25
+        case .oneOver15: return ._1_15
+        case .oneOver10: return ._1_10
+        case .oneOver8: return ._1_8
+        case .oneOver6: return ._1_6
+        case .oneOver4: return ._1_4
+        case .oneOver3: return ._1_3
+        case .oneOver2: return ._1_2
+        case .oneOver1_5: return ._1_50
+        case .one: return ._1
         }
     }
 }

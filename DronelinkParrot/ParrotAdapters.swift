@@ -196,7 +196,10 @@ public class ParrotCameraAdapter: CameraAdapter {
 
 
 extension ParrotCameraAdapter: CameraStateAdapter {
-    public var isCapturingPhotoInterval: Bool {
+    public var isBusy: Bool { false }
+    public var isCapturing: Bool { isCapturingVideo || isCapturingPhoto }
+    public var isCapturingPhotoInterval: Bool { mode == .photo && photoMode == .interval && isCapturingPhoto }
+    public var isCapturingPhoto: Bool {
         switch camera.modeSetting.mode {
         case .recording: return false
         case .photo:
@@ -209,7 +212,6 @@ extension ParrotCameraAdapter: CameraStateAdapter {
         @unknown default: return false
         }
     }
-    
     public var isCapturingVideo: Bool {
         switch camera.modeSetting.mode {
         case .recording:
@@ -223,56 +225,20 @@ extension ParrotCameraAdapter: CameraStateAdapter {
         @unknown default: return false
         }
     }
-    
-    public var isCapturing: Bool { isCapturingVideo || isCapturingPhotoInterval }
-    
-    public var isSDCardInserted: Bool {
-        //FIXME
-        return true
-    }
-    
-    public var mode: Kernel.CameraMode {
-        switch camera.modeSetting.mode {
-        case .recording: return .video
-        case .photo: return .photo
-        @unknown default: return .unknown
-        }
-    }
-    
-    public var photoMode: Kernel.CameraPhotoMode? {
-        //FIXME
-        nil
-    }
-    
-    public var photoInterval: Int? {
-        //FIXME
-        nil
-    }
-    
-    public var exposureCompensation: Kernel.CameraExposureCompensation {
-        //FIXME
-        return .n00
-    }
-    
-    public var iso: Kernel.CameraISO {
-        //FIXME
-        .unknown
-    }
-    
-    public var shutterSpeed: Kernel.CameraShutterSpeed {
-        //FIXME
-        .unknown
-    }
-    
-    public var aperture: Kernel.CameraAperture {
-        //FIXME
-        .unknown
-    }
-    
-    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset {
-        camera.whiteBalanceSettings.mode.kernelValue
-    }
-    
+    public var isCapturingContinuous: Bool { isCapturingVideo || isCapturingPhotoInterval }
+    public var isSDCardInserted: Bool { return true }
+    public var storageLocation: Kernel.CameraStorageLocation { .sdCard }
+    public var mode: Kernel.CameraMode { camera.modeSetting.mode.kernelValue }
+    public var photoMode: Kernel.CameraPhotoMode? { camera.photoSettings.mode.kernelValue }
+    public var burstCount: Kernel.CameraBurstCount? { camera.photoSettings.burstValue.kernelValue }
+    public var aebCount: Kernel.CameraAEBCount? { camera.photoSettings.bracketingValue.kernelValue }
+    public var photoInterval: Int? { Int(camera.photoSettings.timelapseCaptureInterval) }
+    public var currentVideoTime: Double? { camera.recordingState.functionState == .started ? camera.recordingState.getDuration() : nil }
+    public var exposureCompensation: Kernel.CameraExposureCompensation { camera.exposureCompensationSetting.value.kernelValue }
+    public var iso: Kernel.CameraISO { camera.exposureSettings.manualIsoSensitivity.kernelValue }
+    public var shutterSpeed: Kernel.CameraShutterSpeed { camera.exposureSettings.manualShutterSpeed.kernelValue }
+    public var aperture: Kernel.CameraAperture { .unknown }
+    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
     public var lensDetails: String? { nil }
 }
 
@@ -296,12 +262,10 @@ public class ParrotGimbalAdapter: GimbalAdapter {
     }
     
     public func reset() {
-        //FIXME
+        gimbal.control(mode: .position, yaw: 0, pitch: 0, roll: 0)
     }
     
-    public func fineTune(roll: Double) {
-        //FIXME
-    }
+    public func fineTune(roll: Double) {}
 }
 
 extension ParrotGimbalAdapter: GimbalStateAdapter {

@@ -183,6 +183,7 @@ extension ParrotDroneSession: DroneSession {
         
         return nil
     }
+    public var rtkManager: RTKManager? { nil }
     
     public func identify(id: String) { _id = id }
     
@@ -419,9 +420,17 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         return nil
     }
+    public var lowBatteryThreshold: Double? { 0.2 }
     public var obstacleDistance: Double? { nil }
     public var orientation: Kernel.Orientation3 { telemetry?.value.droneMissionOrientation ?? Kernel.Orientation3() }
     public var gpsSatellites: Int? { _gps?.value.satelliteCount }
+    public var gpsSignalStrength: Double? {
+        guard let gpsSatellites = gpsSatellites else {
+            return nil
+        }
+        
+        return min(1.0, Double(gpsSatellites) / 10)
+    }
     public var downlinkSignalStrength: Double? { nil }
     public var uplinkSignalStrength: Double? {
         guard let rssi = _radio?.value.rssi, rssi != 0 else {
@@ -429,8 +438,5 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         
         return min(1.0, max(0.0, 1.0 - ((Double(min(-30, max(-80, rssi))) + 30.0) / -50.0)))
-    }
-    public var signalStrength: Double? {
-        uplinkSignalStrength //FIXME remove
     }
 }

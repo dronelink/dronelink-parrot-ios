@@ -60,7 +60,6 @@ extension ParrotDroneSessionManager: DroneSessionManager {
     public var session: DroneSession? { _session }
     
     public var statusMessages: [Kernel.Message]? {
-        //FIXME session?.state?.value.statusMessages
-        nil
+        session?.state?.value.statusMessages
     }
 }
