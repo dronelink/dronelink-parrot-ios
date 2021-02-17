@@ -236,9 +236,11 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var currentVideoTime: Double? { camera.recordingState.functionState == .started ? camera.recordingState.getDuration() : nil }
     public var exposureCompensation: Kernel.CameraExposureCompensation { camera.exposureCompensationSetting.value.kernelValue }
     public var iso: Kernel.CameraISO { camera.exposureSettings.manualIsoSensitivity.kernelValue }
+    public var isoSensitivity: Int? { camera.exposureSettings.manualIsoSensitivity.rawValue }
     public var shutterSpeed: Kernel.CameraShutterSpeed { camera.exposureSettings.manualShutterSpeed.kernelValue }
     public var aperture: Kernel.CameraAperture { .unknown }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
+    public var whiteBalanceColorTemperature: Int? { camera.whiteBalanceSettings.customTemperature.rawValue }
     public var lensDetails: String? { nil }
 }
 
