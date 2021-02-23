@@ -69,6 +69,10 @@ extension ParrotDroneSession {
         if cameraCommand is Kernel.FocusModeCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
+        
+        if cameraCommand is Kernel.FocusRingCameraCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
 
         if let command = cameraCommand as? Kernel.ISOCameraCommand {
             adapter.camera.exposureSettings.set(mode: .manualIsoSensitivity, manualShutterSpeed: nil, manualIsoSensitivity: command.iso.parrotValue, maximumIsoSensitivity: nil)
