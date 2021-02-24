@@ -468,6 +468,7 @@ extension Kernel.CameraVideoFrameRate {
         case ._96: return .fps96
         case ._100: return .fps100
         case ._120: return .fps120
+        case ._240: return .fps240
         case ._8dot7: return .fps9
         case .unknown: return .fps24
         }
