@@ -131,11 +131,11 @@ extension ParrotDroneSession {
             switch adapter.mode {
             case .photo:
                 if adapter.isCapturingPhotoInterval {
-                    os_log(.debug, log: log, "Camera start capture skipped, already shooting interval photos")
+                    os_log(.debug, log: ParrotDroneSession.log, "Camera start capture skipped, already shooting interval photos")
                     finished(nil)
                 }
                 else if adapter.camera.canStartPhotoCapture {
-                    os_log(.debug, log: log, "Camera start capture photo")
+                    os_log(.debug, log: ParrotDroneSession.log, "Camera start capture photo")
                     adapter.camera.startPhotoCapture()
                     DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
                         finished(nil)
@@ -148,11 +148,11 @@ extension ParrotDroneSession {
 
             case .video:
                 if adapter.isCapturingVideo {
-                    os_log(.debug, log: log, "Camera start capture skipped, already recording video")
+                    os_log(.debug, log: ParrotDroneSession.log, "Camera start capture skipped, already recording video")
                     finished(nil)
                 }
                 else if adapter.camera.canStartRecord {
-                    os_log(.debug, log: log, "Camera start capture video")
+                    os_log(.debug, log: ParrotDroneSession.log, "Camera start capture video")
                     adapter.camera.startRecording()
                     DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
                         finished(nil)
@@ -164,7 +164,7 @@ extension ParrotDroneSession {
                 break
 
             default:
-                os_log(.info, log: log, "Camera start capture invalid mode: %d", adapter.mode.parrotValue.rawValue)
+                os_log(.info, log: ParrotDroneSession.log, "Camera start capture invalid mode: %d", adapter.mode.parrotValue.rawValue)
                 return "MissionDisengageReason.drone.camera.mode.invalid.title".localized
             }
             return nil
@@ -175,7 +175,7 @@ extension ParrotDroneSession {
             case .photo:
                 if adapter.isCapturingPhotoInterval {
                     if adapter.camera.canStopPhotoCapture {
-                        os_log(.debug, log: log, "Camera stop capture interval photo")
+                        os_log(.debug, log: ParrotDroneSession.log, "Camera stop capture interval photo")
                         adapter.camera.stopPhotoCapture()
                         finished(nil)
                     }
@@ -184,7 +184,7 @@ extension ParrotDroneSession {
                     }
                 }
                 else {
-                    os_log(.debug, log: log, "Camera stop capture skipped, not shooting interval photos")
+                    os_log(.debug, log: ParrotDroneSession.log, "Camera stop capture skipped, not shooting interval photos")
                     finished(nil)
                 }
                 break
@@ -192,7 +192,7 @@ extension ParrotDroneSession {
             case .video:
                 if adapter.isCapturingVideo {
                     if adapter.camera.canStopRecord {
-                        os_log(.debug, log: log, "Camera stop capture video")
+                        os_log(.debug, log: ParrotDroneSession.log, "Camera stop capture video")
                         adapter.camera.stopRecording()
                         finished(nil)
                     }
@@ -201,13 +201,13 @@ extension ParrotDroneSession {
                     }
                 }
                 else {
-                    os_log(.debug, log: log, "Camera stop capture skipped, not recording video")
+                    os_log(.debug, log: ParrotDroneSession.log, "Camera stop capture skipped, not recording video")
                     finished(nil)
                 }
                 break
 
             default:
-                os_log(.info, log: log, "Camera stop capture skipped, invalid mode: %d", adapter.mode.parrotValue.rawValue)
+                os_log(.info, log: ParrotDroneSession.log, "Camera stop capture skipped, invalid mode: %d", adapter.mode.parrotValue.rawValue)
                 finished(nil)
                 break
             }

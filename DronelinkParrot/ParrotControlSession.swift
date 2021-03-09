@@ -12,7 +12,7 @@ import GroundSdk
 import JavaScriptCore
 
 public class ParrotControlSession: DroneControlSession {
-    private let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotControlSession")
+    private static let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotControlSession")
     
     private enum State {
         case TakeoffStart
@@ -64,16 +64,16 @@ public class ParrotControlSession: DroneControlSession {
             }
             
             state = .TakeoffAttempting
-            os_log(.info, log: log, "Attempting takeoff")
+            os_log(.info, log: ParrotControlSession.log, "Attempting takeoff")
             flightController.takeOff()
-            DispatchQueue.global().asyncAfter(deadline: .now() + 5.0) {
-                if self.droneSession.state?.value.isFlying ?? false {
-                    os_log(.info, log: self.log, "Takeoff succeeded")
-                    self.state = .FlightControllerActivateStart
+            DispatchQueue.global().asyncAfter(deadline: .now() + 5.0) { [weak self] in
+                if self?.droneSession.state?.value.isFlying ?? false {
+                    os_log(.info, log: ParrotControlSession.log, "Takeoff succeeded")
+                    self?.state = .FlightControllerActivateStart
                 }
                 else {
-                    self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized)
-                    self.deactivate()
+                    self?.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized)
+                    self?.deactivate()
                 }
             }
             return nil
@@ -89,7 +89,7 @@ public class ParrotControlSession: DroneControlSession {
                 return activate()
             }
             
-            os_log(.info, log: log, "Attempting flight controller activation")
+            os_log(.info, log: ParrotControlSession.log, "Attempting flight controller activation")
             if flightController.activate() {
                 state = .FlightControllerActivateComplete
                 return activate()

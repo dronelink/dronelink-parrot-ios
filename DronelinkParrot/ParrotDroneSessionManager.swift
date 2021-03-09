@@ -11,7 +11,7 @@ import DronelinkCore
 import GroundSdk
 
 public class ParrotDroneSessionManager: NSObject {
-    private let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneSessionManager")
+    private static let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneSessionManager")
     
     private let delegates = MulticastDelegate<DroneSessionManagerDelegate>()
     private let groundSdk = GroundSdk()

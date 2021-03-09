@@ -12,7 +12,7 @@ import GroundSdk
 import CoreLocation
 
 public class ParrotDroneSession: NSObject {
-    internal let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneSession")
+    internal static let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneSession")
     
     public let adapter: ParrotDroneAdapter
     
@@ -55,40 +55,40 @@ public class ParrotDroneSession: NSObject {
     }
     
     private func initDrone() {
-        os_log(.info, log: log, "Drone session opened")
+        os_log(.info, log: ParrotDroneSession.log, "Drone session opened")
         
-        flyingIndicatorsRef = adapter.drone.getInstrument(Instruments.flyingIndicators) { value in
-            guard let value = value else { return }
-            let motorsOnPrevious = self._flyingIndicators?.value.areMotorsOn ?? false
-            self._flyingIndicators = DatedValue<FlyingIndicators>(value: value)
+        flyingIndicatorsRef = adapter.drone.getInstrument(Instruments.flyingIndicators) { [weak self] value in
+            guard let value = value, let session = self else { return }
+            let motorsOnPrevious = session._flyingIndicators?.value.areMotorsOn ?? false
+            session._flyingIndicators = DatedValue<FlyingIndicators>(value: value)
             if (motorsOnPrevious != value.areMotorsOn) {
                 DispatchQueue.global().async {
-                    self.delegates.invoke { $0.onMotorsChanged(session: self, value: value.areMotorsOn) }
+                    session.delegates.invoke { $0.onMotorsChanged(session: session, value: value.areMotorsOn) }
                 }
             }
         }
         
-        alarmsRef = adapter.drone.getInstrument(Instruments.alarms) { value in
+        alarmsRef = adapter.drone.getInstrument(Instruments.alarms) { [weak self] value in
             guard let value = value else { return }
-            self._alarms = DatedValue<Alarms>(value: value)
+            self?._alarms = DatedValue<Alarms>(value: value)
         }
         
-        gpsRef = adapter.drone.getInstrument(Instruments.gps) { value in
+        gpsRef = adapter.drone.getInstrument(Instruments.gps) { [weak self] value in
             guard let value = value else { return }
-            self._gps = DatedValue<Gps>(value: value)
+            self?._gps = DatedValue<Gps>(value: value)
         }
         
-        radioRef = adapter.drone.getInstrument(Instruments.radio) { value in
+        radioRef = adapter.drone.getInstrument(Instruments.radio) { [weak self] value in
             guard let value = value else { return }
-            self._radio = DatedValue<Radio>(value: value)
+            self?._radio = DatedValue<Radio>(value: value)
         }
         
-        batteryInfoRef = adapter.drone.getInstrument(Instruments.batteryInfo) { value in
+        batteryInfoRef = adapter.drone.getInstrument(Instruments.batteryInfo) { [weak self] value in
             guard let value = value else { return }
-            self._batteryInfo = DatedValue<BatteryInfo>(value: value)
+            self?._batteryInfo = DatedValue<BatteryInfo>(value: value)
         }
         
-        geofenceRef = adapter.drone.getPeripheral(Peripherals.geofence) { value in
+        geofenceRef = adapter.drone.getPeripheral(Peripherals.geofence) { [weak self] value in
             guard let value = value else { return }
             value.mode.value = .altitude
         }
@@ -103,8 +103,11 @@ public class ParrotDroneSession: NSObject {
             if let location = location {
                 if (!_located) {
                     _located = true
-                    DispatchQueue.global().async {
-                        self.delegates.invoke { $0.onLocated(session: self) }
+                    DispatchQueue.global().async { [weak self] in
+                        guard let session = self else {
+                            return
+                        }
+                        session.delegates.invoke { $0.onLocated(session: session) }
                     }
                 }
 
@@ -126,7 +129,7 @@ public class ParrotDroneSession: NSObject {
         radioRef = nil
         batteryInfoRef = nil
         
-        os_log(.info, log: log, "Drone session closed")
+        os_log(.info, log: ParrotDroneSession.log, "Drone session closed")
     }
     
     internal func sendResetVelocityCommand() {
@@ -208,12 +211,12 @@ extension ParrotDroneSession: DroneSession {
             try droneCommands.add(command: Command(
                 id: command.id,
                 name: command.type.rawValue,
-                execute: { finished in
-                    self.commandExecuted(command: command)
-                    return self.execute(droneCommand: command, finished: finished)
+                execute: { [weak self] finished in
+                    self?.commandExecuted(command: command)
+                    return self?.execute(droneCommand: command, finished: finished)
                 },
-                finished: { error in
-                    self.commandFinished(command: command, error: error)
+                finished: { [weak self] error in
+                    self?.commandFinished(command: command, error: error)
                 },
                 config: command.config
             ))
@@ -224,12 +227,12 @@ extension ParrotDroneSession: DroneSession {
             try cameraCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
-                execute: {
-                    self.commandExecuted(command: command)
-                    return self.execute(cameraCommand: command, finished: $0)
+                execute: { [weak self] finished in
+                    self?.commandExecuted(command: command)
+                    return self?.execute(cameraCommand: command, finished: finished)
                 },
-                finished: { error in
-                    self.commandFinished(command: command, error: error)
+                finished: { [weak self] error in
+                    self?.commandFinished(command: command, error: error)
                 },
                 config: command.config
             ))
@@ -240,12 +243,12 @@ extension ParrotDroneSession: DroneSession {
             try gimbalCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
-                execute: {
-                    self.commandExecuted(command: command)
-                    return self.execute(gimbalCommand: command, finished: $0)
+                execute: { [weak self] finished in
+                    self?.commandExecuted(command: command)
+                    return self?.execute(gimbalCommand: command, finished: finished)
                 },
-                finished: { error in
-                    self.commandFinished(command: command, error: error)
+                finished: { [weak self] error in
+                    self?.commandFinished(command: command, error: error)
                 },
                 config: command.config
             ))
