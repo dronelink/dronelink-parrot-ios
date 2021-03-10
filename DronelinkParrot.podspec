@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.source_files  = "DronelinkParrot/*.{swift}"
   s.resources = "DronelinkParrot/**/*.{strings}"
 
-  s.dependency "DronelinkCore", "~> 2.2.0"
+  s.dependency "DronelinkCore", "~> 2.2.0-beta1"
   s.dependency "GroundSdk", "~> 1.7.1"
   s.dependency "ArsdkEngine", "~> 1.7.1"
   s.dependency "SdkCore", "~> 1.7.1"
