@@ -19,6 +19,21 @@ public class DronelinkParrot {
     public static var telemetryProvider: ParrotTelemetryProvider?
 }
 
+extension Speedometer {
+    public var verticalSpeed: Double { -downSpeed }
+    public var course: Double { Double(atan2(northSpeed, eastSpeed)) }
+}
+
+extension AttitudeIndicator {
+    public var kernelOrientation: Kernel.Orientation3 {
+        Kernel.Orientation3(
+            x: pitch.convertDegreesToRadians,
+            y: roll.convertDegreesToRadians,
+            z: 0
+        )
+    }
+}
+
 extension FlyingIndicators {
     var isFlying: Bool {
         switch state {
