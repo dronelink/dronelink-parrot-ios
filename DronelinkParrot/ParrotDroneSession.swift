@@ -341,8 +341,7 @@ extension ParrotDroneSession: DroneSession {
     }
     
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
-        guard let gimbal = adapter.gimbal(channel: channel) as? ParrotGimbalAdapter else { return nil }
-        return DatedValue<GimbalStateAdapter>(value: gimbal)
+        return DatedValue<GimbalStateAdapter>(value: ParrotGimbalStateAdapter(orientation: telemetry?.value.gimbalOrientation ?? (adapter.gimbal(channel: channel) as? ParrotGimbalAdapter)?.gimbal.kernelOrientation))
     }
     
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {

@@ -70,7 +70,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
             if let gimbal = gimbal {
-                self?.gimbal = ParrotGimbalAdapter(gimbal: gimbal, drone: self)
+                self?.gimbal = ParrotGimbalAdapter(gimbal: gimbal)
             }
             else {
                 self?.gimbal = nil
@@ -250,11 +250,8 @@ extension ParrotCameraAdapter: CameraStateAdapter {
 public class ParrotGimbalAdapter: GimbalAdapter {
     public let gimbal: Gimbal
     
-    private weak var drone: ParrotDroneAdapter?
-    
-    public init(gimbal: Gimbal, drone: ParrotDroneAdapter?) {
+    public init(gimbal: Gimbal) {
         self.gimbal = gimbal
-        self.drone = drone
     }
     
     public var index: UInt { 0 }
@@ -274,11 +271,12 @@ public class ParrotGimbalAdapter: GimbalAdapter {
     public func fineTune(roll: Double) {}
 }
 
-extension ParrotGimbalAdapter: GimbalStateAdapter {
+public class ParrotGimbalStateAdapter: GimbalStateAdapter {
     public var mode: Kernel.GimbalMode { .yawFollow }
+    public var orientation: Kernel.Orientation3
     
-    public var orientation: Kernel.Orientation3 {
-        return drone?.session?.gimbalState(channel: 0)?.value.orientation ?? Kernel.Orientation3()
+    public init(orientation: Kernel.Orientation3? = nil) {
+        self.orientation = orientation ?? Kernel.Orientation3()
     }
 }
 

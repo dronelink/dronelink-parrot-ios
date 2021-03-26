@@ -34,6 +34,14 @@ extension AttitudeIndicator {
     }
 }
 
+extension Gimbal {
+    public var kernelOrientation: Kernel.Orientation3 {
+        Kernel.Orientation3(
+            x: currentAttitude[.pitch]?.convertDegreesToRadians ?? 0,
+            y: currentAttitude[.roll]?.convertDegreesToRadians ?? 0,
+            z: currentAttitude[.yaw]?.convertDegreesToRadians ?? 0)
+    }
+}
 extension FlyingIndicators {
     var isFlying: Bool {
         switch state {
