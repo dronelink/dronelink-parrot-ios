@@ -471,6 +471,12 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         return _speedometer?.value.verticalSpeed ?? 0
     }
+    public var absoluteSpeed: Double {
+        guard let telemetry = telemetry?.value else {
+            return 0
+        }
+        return adapter.drone.getInstrument(Instruments.speedometer)?.groundSpeed ?? 0
+    }
     public var altitude: Double {
         if let altitude = telemetry?.value.altitude, !altitude.isNaN {
             return altitude
