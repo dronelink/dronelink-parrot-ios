@@ -45,11 +45,11 @@ public struct ParrotTelemetry {
         self.frameQuatW = frameQuatW
     }
     
-    var droneMissionOrientation: Kernel.Orientation3 {
+    var droneOrientation: Kernel.Orientation3 {
         return Kernel.Orientation3.fromQuaternion(x: droneQuatX, y: droneQuatY, z: droneQuatZ, w: droneQuatW)
     }
     
-    var gimbalMissionOrientation: Kernel.Orientation3 {
+    var gimbalOrientation: Kernel.Orientation3 {
         return Kernel.Orientation3.fromQuaternion(x: frameQuatX, y: frameQuatY, z: frameQuatZ, w: frameQuatW)
     }
 }

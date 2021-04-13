@@ -9,12 +9,9 @@ import DronelinkCore
 import GroundSdk
 
 public class ParrotDroneAdapter: DroneAdapter {
-    public var remoteControllers: [RemoteControllerAdapter]?
-    
     public let drone: Drone
-    public let remoteControl: RemoteControl?
-    
-    private var telemetry: DatedValue<ParrotTelemetry>? { DronelinkParrot.telemetryProvider?.telemetry }
+    public var remoteControl: RemoteControl?
+    public weak var session: ParrotDroneSession?
     
     private var flightControllerRef: Ref<ManualCopterPilotingItf>?
     private var returnHomeControllerRef: Ref<ReturnHomePilotingItf>?
@@ -49,10 +46,6 @@ public class ParrotDroneAdapter: DroneAdapter {
             self?._returnHomeController = itf
         }
         
-        copilotControllerRef = remoteControl?.getPeripheral(Peripherals.copilot) { [weak self] copilot in
-            self?._copilotController = copilot
-        }
-        
         geoFenceRef = drone.getPeripheral(Peripherals.geofence) { [weak self] geoFence in
             self?._geoFence = geoFence
         }
@@ -85,7 +78,19 @@ public class ParrotDroneAdapter: DroneAdapter {
         }
     }
     
-    public func remoteController(channel: UInt) -> RemoteControllerAdapter? { remoteControllers?[safeIndex: Int(channel)] }
+    public var remoteControllers: [RemoteControllerAdapter]? {
+        guard let remoteControl = remoteControl else {
+            return nil
+        }
+        return [ParrotRemoteControllerAdapter(remoteControl: remoteControl)]
+    }
+    
+    public func remoteController(channel: UInt) -> RemoteControllerAdapter? {
+        if channel == 0, let remoteControl = remoteControl {
+            return ParrotRemoteControllerAdapter(remoteControl: remoteControl)
+        }
+        return nil
+    }
     
     public var cameras: [CameraAdapter]? {
         if let mainCamera = mainCamera {
@@ -119,13 +124,12 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         guard
             let flightController = flightController,
-            let telemetry = telemetry?.value
+            let orientation = session?.state?.value.orientation
         else {
             return
         }
         
         //offset the velocity vector by the heading of the drone
-        let orientation = telemetry.droneMissionOrientation
         var horizontal = velocityCommand.velocity.horizontal
         horizontal = Kernel.Vector2(direction: horizontal.direction - orientation.yaw, magnitude: horizontal.magnitude)
         let pitch = -Int(max(-1, min(1, horizontal.x / DronelinkParrot.maxVelocityHorizontal)) * 100)
@@ -194,7 +198,6 @@ public class ParrotCameraAdapter: CameraAdapter {
     public var index: UInt { 0 }
 }
 
-
 extension ParrotCameraAdapter: CameraStateAdapter {
     public var isBusy: Bool { false }
     public var isCapturing: Bool { isCapturingVideo || isCapturingPhoto }
@@ -245,8 +248,6 @@ extension ParrotCameraAdapter: CameraStateAdapter {
 }
 
 public class ParrotGimbalAdapter: GimbalAdapter {
-    private var telemetry: DatedValue<ParrotTelemetry>? { DronelinkParrot.telemetryProvider?.telemetry }
-    
     public let gimbal: Gimbal
     
     public init(gimbal: Gimbal) {
@@ -270,11 +271,21 @@ public class ParrotGimbalAdapter: GimbalAdapter {
     public func fineTune(roll: Double) {}
 }
 
-extension ParrotGimbalAdapter: GimbalStateAdapter {
+public class ParrotGimbalStateAdapter: GimbalStateAdapter {
     public var mode: Kernel.GimbalMode { .yawFollow }
+    public var orientation: Kernel.Orientation3
     
-    public var orientation: Kernel.Orientation3 {
-        let gimbalMissionOrientation = telemetry?.value.gimbalMissionOrientation
-        return gimbalMissionOrientation ?? Kernel.Orientation3()
+    public init(orientation: Kernel.Orientation3? = nil) {
+        self.orientation = orientation ?? Kernel.Orientation3()
     }
+}
+
+public class ParrotRemoteControllerAdapter: RemoteControllerAdapter {
+    public let remoteControl: RemoteControl
+    
+    public init(remoteControl: RemoteControl) {
+        self.remoteControl = remoteControl
+    }
+    
+    public var index: UInt { 0 }
 }

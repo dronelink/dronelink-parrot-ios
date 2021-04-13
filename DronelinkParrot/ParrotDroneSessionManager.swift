@@ -39,6 +39,10 @@ public class ParrotDroneSessionManager: NSObject {
                         self.delegates.invoke { $0.onOpened(session: self._session!) }
                     }
                 }
+                
+                if (self._session?.adapter.remoteControl?.uid != autoConnection.remoteControl?.uid) {
+                    self._session?.adapter.remoteControl = autoConnection.remoteControl
+                }
             }
         }
     }
