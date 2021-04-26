@@ -58,6 +58,7 @@ public class ParrotDroneSession: NSObject {
     
     public var flyingIndicators: DatedValue<FlyingIndicators>? { _flyingIndicators }
     public var batteryInfo: DatedValue<BatteryInfo>? { _batteryInfo }
+    public var remoteBatteryInfo: DatedValue<BatteryInfo>? { _remoteControllerBatteryInfo }
     
     public init(drone: Drone, remoteControl: RemoteControl?) {
         adapter = ParrotDroneAdapter(drone: drone, remoteControl: remoteControl)
