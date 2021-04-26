@@ -63,6 +63,14 @@ extension ParrotDroneSessionManager: DroneSessionManager {
     
     public var session: DroneSession? { _session }
     
+    public func closeSession() {
+        if let session = _session {
+            session.close()
+            _session = nil
+            delegates.invoke { $0.onClosed(session: session) }
+        }
+    }
+    
     public var statusMessages: [Kernel.Message]? {
         session?.state?.value.statusMessages
     }

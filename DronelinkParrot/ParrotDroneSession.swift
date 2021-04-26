@@ -508,4 +508,85 @@ extension ParrotDroneSession: DroneStateAdapter {
         
         return min(1.0, max(0.0, 1.0 - ((Double(min(-30, max(-80, rssi))) + 30.0) / -50.0)))
     }
+    public var droneQuatX: Double? {
+        if let droneQuatX = telemetry?.value.droneQuatX {
+            if (droneQuatX.isNaN) {
+                return nil
+            }
+            return droneQuatX
+        }
+        return nil
+    }
+    public var droneQuatY: Double? {
+        if let droneQuatY = telemetry?.value.droneQuatY {
+            if (droneQuatY.isNaN) {
+                return nil
+            }
+            return droneQuatY
+        }
+        return nil
+    }
+    public var droneQuatZ: Double? {
+        if let droneQuatZ = telemetry?.value.droneQuatZ {
+            if (droneQuatZ.isNaN) {
+                return nil
+            }
+            return droneQuatZ
+        }
+        return nil
+    }
+    public var frameQuatX: Double? {
+        if let frameQuatX = telemetry?.value.frameQuatX {
+            if (frameQuatX.isNaN) {
+                return nil
+            }
+            return frameQuatX
+        }
+        return nil
+    }
+    public var frameQuatY: Double? {
+        if let frameQuatY = telemetry?.value.frameQuatY {
+            if (frameQuatY.isNaN) {
+                return nil
+            }
+            return frameQuatY
+        }
+        return nil
+    }
+    public var frameQuatZ: Double? {
+        if let frameQuatZ = telemetry?.value.frameQuatZ {
+            if (frameQuatZ.isNaN) {
+                return nil
+            }
+            return frameQuatZ
+        }
+        return nil
+    }
+    public var speedEast: Double? {
+        if let speedEast = telemetry?.value.speedEast {
+            if (speedEast.isNaN) {
+                return nil
+            }
+            return speedEast
+        }
+        return nil
+    }
+    public var speedNorth: Double? {
+        if let speedNorth = telemetry?.value.speedNorth {
+            if (speedNorth.isNaN) {
+                return nil
+            }
+            return speedNorth
+        }
+        return nil
+    }
+    public var speedDown: Double? {
+        if let speedDown = telemetry?.value.speedDown {
+            if (speedDown.isNaN) {
+                return nil
+            }
+            return speedDown
+        }
+        return nil
+    }
 }
