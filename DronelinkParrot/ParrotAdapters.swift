@@ -52,7 +52,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         mainCameraRef = drone.getPeripheral(Peripherals.mainCamera) { [weak self] mainCamera in
             if let mainCamera = mainCamera {
-                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: drone.model.description)
+                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: drone.model.description, index: 0)
             }
             else {
                 self?.mainCamera = nil
@@ -61,7 +61,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         thermalCameraRef = drone.getPeripheral(Peripherals.thermalCamera) { [weak self] thermalCamera in
             if let thermalCamera = thermalCamera {
-                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: drone.model.description)
+                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: drone.model.description, index: 1)
             }
             else {
                 self?.thermalCamera = nil
@@ -105,7 +105,9 @@ public class ParrotDroneAdapter: DroneAdapter {
         return nil
     }
     
-    public func camera(channel: UInt) -> CameraAdapter? { cameras?[safeIndex: Int(channel)] }
+    public func camera(channel: UInt) -> CameraAdapter? {
+        return cameras?.first(where: { $0.index == Int(channel) })
+    }
     
     public var gimbals: [GimbalAdapter]? {
         if let gimbal = gimbal {
@@ -189,13 +191,13 @@ public class ParrotDroneAdapter: DroneAdapter {
 public class ParrotCameraAdapter: CameraAdapter {
     public let camera: Camera
     public let model: String?
+    public var index: UInt = 0
     
-    public init(camera: Camera, model: String?) {
+    public init(camera: Camera, model: String?, index: UInt) {
         self.camera = camera
         self.model = model
+        self.index = index
     }
-    
-    public var index: UInt { 0 }
 }
 
 extension ParrotCameraAdapter: CameraStateAdapter {
