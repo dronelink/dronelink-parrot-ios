@@ -1,14 +1,14 @@
 PODS:
   - ArsdkEngine (1.7.1):
     - GroundSdk (= 1.7.1)
-  - DronelinkCore (2.2.0-beta1)
+  - DronelinkCore (2.2.0)
   - GroundSdk (1.7.1):
     - SdkCore (= 1.7.1)
   - SdkCore (1.7.1)
 
 DEPENDENCIES:
   - ArsdkEngine (~> 1.7.1)
-  - DronelinkCore (= 2.2.0-beta1)
+  - DronelinkCore (= 2.2.0)
   - GroundSdk (~> 1.7.1)
   - SdkCore (~> 1.7.1)
 
@@ -21,10 +21,10 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   ArsdkEngine: 141abda6632f25935253d3f4d2ff5eccd92fffca
-  DronelinkCore: 328580ce1a98ae1cca486563c34b7b09f0f71c49
+  DronelinkCore: d592fa18c13a5b336a706d4caf8530b6fb5512fb
   GroundSdk: 3b5a38e2039aaef3cd5aee22a543dfbf37376ca6
   SdkCore: 524918831cb24f5443a65974797be6eda76613ec
 
-PODFILE CHECKSUM: cf2459d59bfa61f3c7fd1789add4d80781863b53
+PODFILE CHECKSUM: 62fa7849ad567abc366b212c216de8bc128466ec
 
 COCOAPODS: 1.10.1
