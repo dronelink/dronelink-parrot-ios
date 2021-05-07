@@ -354,6 +354,10 @@ extension ParrotDroneSession: DroneSession {
         sendResetCameraCommands()
     }
     
+    public func changeCamera(channel: UInt) {
+        self.delegates.invoke { $0.onCameraChanged(session: self, channel: channel) }
+    }
+    
     public func close() {
         _closed = true
     }
