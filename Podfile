@@ -3,7 +3,7 @@ inhibit_all_warnings!
 use_frameworks!
 
 target 'DronelinkParrot' do
-  pod 'DronelinkCore', :path => '../../private/dronelink-core-ios'
+  pod 'DronelinkCore', '2.2.0'
   pod 'GroundSdk', '~> 1.7.1'
   pod 'ArsdkEngine', '~> 1.7.1'
   pod 'SdkCore', '~> 1.7.1'
