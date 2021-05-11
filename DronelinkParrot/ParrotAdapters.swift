@@ -52,7 +52,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         mainCameraRef = drone.getPeripheral(Peripherals.mainCamera) { [weak self] mainCamera in
             if let mainCamera = mainCamera {
-                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: drone.model.description)
+                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: "main")
             }
             else {
                 self?.mainCamera = nil
@@ -61,7 +61,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         thermalCameraRef = drone.getPeripheral(Peripherals.thermalCamera) { [weak self] thermalCamera in
             if let thermalCamera = thermalCamera {
-                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: drone.model.description)
+                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: "thermal")
             }
             else {
                 self?.thermalCamera = nil
@@ -93,13 +93,10 @@ public class ParrotDroneAdapter: DroneAdapter {
     }
     
     public var cameras: [CameraAdapter]? {
-        if let mainCamera = mainCamera {
-            if let thermalCamera = thermalCamera {
-                return [mainCamera, thermalCamera]
-            }
+        if let mainCamera = mainCamera, mainCamera.camera.isActive {
             return [mainCamera]
         }
-        else if let thermalCamera = thermalCamera {
+        else if let thermalCamera = thermalCamera, thermalCamera.camera.isActive {
             return [thermalCamera]
         }
         return nil
