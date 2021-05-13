@@ -20,6 +20,7 @@ public class ParrotDroneAdapter: DroneAdapter {
     private var mainCameraRef: Ref<MainCameraDesc.ApiProtocol>?
     private var thermalCameraRef: Ref<ThermalCameraDesc.ApiProtocol>?
     private var gimbalRef: Ref<GimbalDesc.ApiProtocol>?
+    private var rcBatteryRef: Ref<BatteryInfo>?
     
     private var _flightController: ManualCopterPilotingItf?
     private var _returnHomeController: ReturnHomePilotingItf?
@@ -82,12 +83,12 @@ public class ParrotDroneAdapter: DroneAdapter {
         guard let remoteControl = remoteControl else {
             return nil
         }
-        return [ParrotRemoteControllerAdapter(remoteControl: remoteControl)]
+        return [ParrotRemoteControllerAdapter(remoteControl: remoteControl, batteryPercent: 0.0)]
     }
     
     public func remoteController(channel: UInt) -> RemoteControllerAdapter? {
         if channel == 0, let remoteControl = remoteControl {
-            return ParrotRemoteControllerAdapter(remoteControl: remoteControl)
+            return ParrotRemoteControllerAdapter(remoteControl: remoteControl, batteryPercent: 0.0)
         }
         return nil
     }
@@ -242,6 +243,8 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
     public var whiteBalanceColorTemperature: Int? { camera.whiteBalanceSettings.customTemperature.rawValue }
     public var lensDetails: String? { nil }
+    public var focusRingValue: Double? { nil }
+    public var focusRingMax: Double? { nil }
 }
 
 public class ParrotGimbalAdapter: GimbalAdapter {
@@ -277,12 +280,35 @@ public class ParrotGimbalStateAdapter: GimbalStateAdapter {
     }
 }
 
-public class ParrotRemoteControllerAdapter: RemoteControllerAdapter {
+public class ParrotRemoteControllerAdapter: RemoteControllerAdapter, RemoteControllerStateAdapter {
+    
+    public var leftStick: Kernel.RemoteControllerStick
+    
+    public var leftWheel: Kernel.RemoteControllerWheel
+    
+    public var rightStick: Kernel.RemoteControllerStick
+    
+    public var pauseButton: Kernel.RemoteControllerButton
+    
+    public var c1Button: Kernel.RemoteControllerButton
+    
+    public var c2Button: Kernel.RemoteControllerButton
+    
+    public var batteryPercent: Double
+    
     public let remoteControl: RemoteControl
     
-    public init(remoteControl: RemoteControl) {
+    public init(remoteControl: RemoteControl, batteryPercent: Double) {
         self.remoteControl = remoteControl
+        self.batteryPercent = batteryPercent
+        self.leftStick = Kernel.RemoteControllerStick(x: 0, y: 0)
+        self.leftWheel = Kernel.RemoteControllerWheel()
+        self.rightStick = Kernel.RemoteControllerStick(x: 0, y: 0)
+        self.pauseButton = Kernel.RemoteControllerButton()
+        self.c1Button = Kernel.RemoteControllerButton()
+        self.c2Button = Kernel.RemoteControllerButton()
     }
     
     public var index: UInt { 0 }
+    
 }

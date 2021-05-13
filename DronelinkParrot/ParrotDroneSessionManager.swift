@@ -50,6 +50,7 @@ public class ParrotDroneSessionManager: NSObject {
 
 
 extension ParrotDroneSessionManager: DroneSessionManager {
+    
     public func add(delegate: DroneSessionManagerDelegate) {
         delegates.add(delegate)
         if let session = _session {
@@ -59,6 +60,14 @@ extension ParrotDroneSessionManager: DroneSessionManager {
     
     public func remove(delegate: DroneSessionManagerDelegate) {
         delegates.remove(delegate)
+    }
+    
+    public func closeSession() {
+        if let session = _session {
+            session.close()
+            _session = nil
+            delegates.invoke { $0.onClosed(session: session) }
+        }
     }
     
     public var session: DroneSession? { _session }
