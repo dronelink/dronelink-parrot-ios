@@ -28,11 +28,7 @@ public class ParrotDroneSessionManager: NSObject {
                 }
                 
                 if (self._session?.serialNumber != autoConnection.drone?.uid) {
-                    if let session = self._session {
-                        session.close()
-                        self._session = nil
-                        self.delegates.invoke { $0.onClosed(session: session) }
-                    }
+                    self.closeSession()
 
                     if let drone = autoConnection.drone {
                         self._session = ParrotDroneSession(drone: drone, remoteControl: autoConnection.remoteControl)
@@ -59,6 +55,14 @@ extension ParrotDroneSessionManager: DroneSessionManager {
     
     public func remove(delegate: DroneSessionManagerDelegate) {
         delegates.remove(delegate)
+    }
+    
+    public func closeSession() {
+        if let session = _session {
+            session.close()
+            _session = nil
+            delegates.invoke { $0.onClosed(session: session) }
+        }
     }
     
     public var session: DroneSession? { _session }

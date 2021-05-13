@@ -245,6 +245,8 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
     public var whiteBalanceColorTemperature: Int? { camera.whiteBalanceSettings.customTemperature.rawValue }
     public var lensDetails: String? { nil }
+    public var focusRingValue: Double? { nil }
+    public var focusRingMax: Double? { nil }
 }
 
 public class ParrotGimbalAdapter: GimbalAdapter {
