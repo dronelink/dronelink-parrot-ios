@@ -58,6 +58,7 @@ public class ParrotDroneSession: NSObject {
     
     public var flyingIndicators: DatedValue<FlyingIndicators>? { _flyingIndicators }
     public var batteryInfo: DatedValue<BatteryInfo>? { _batteryInfo }
+    public var remoteControllerBatteryInfo: DatedValue<BatteryInfo>? { _remoteControllerBatteryInfo }
     
     public init(drone: Drone, remoteControl: RemoteControl?) {
         adapter = ParrotDroneAdapter(drone: drone, remoteControl: remoteControl)
@@ -345,8 +346,9 @@ extension ParrotDroneSession: DroneSession {
     }
     
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
-        //TODO
-        return nil
+        guard let remoteController = adapter.remoteController(channel: channel) as? ParrotRemoteControllerAdapter else { return nil }
+        let batteryLevel = Double(remoteControllerBatteryInfo?.value.batteryLevel ?? 0) / 100
+        return DatedValue<RemoteControllerStateAdapter>(value: ParrotRemoteControllerAdapter(remoteControl: remoteController.remoteControl, batteryPercent: batteryLevel))
     }
     
     public func resetPayloads() {
@@ -358,6 +360,7 @@ extension ParrotDroneSession: DroneSession {
         _closed = true
     }
 }
+
 
 extension ParrotDroneSession: DroneStateAdapter {
     public var statusMessages: [Kernel.Message]? {
