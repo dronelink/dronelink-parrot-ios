@@ -41,6 +41,7 @@ public class ParrotDroneSession: NSObject {
     private var alarmsRef: Ref<Alarms>?
     private var radioRef: Ref<Radio>?
     private var pilotingStateRef: Ref<ManualCopterPilotingItf>?
+    private var flightPlanPilotingRef: Ref<FlightPlanPilotingItf>?
     private var batteryInfoRef: Ref<BatteryInfo>?
     private var remoteControllerBatteryInfoRef: Ref<BatteryInfo>?
     
@@ -55,8 +56,10 @@ public class ParrotDroneSession: NSObject {
     private var _radio: DatedValue<Radio>?
     private var _batteryInfo: DatedValue<BatteryInfo>?
     private var _remoteControllerBatteryInfo: DatedValue<BatteryInfo>?
+    private var _flightPlanPiloting: DatedValue<FlightPlanPilotingItf>?
     
     public var flyingIndicators: DatedValue<FlyingIndicators>? { _flyingIndicators }
+    public var flightPlanPiloting: DatedValue<FlightPlanPilotingItf>? { _flightPlanPiloting }
     public var batteryInfo: DatedValue<BatteryInfo>? { _batteryInfo }
     
     public init(drone: Drone, remoteControl: RemoteControl?) {
@@ -125,6 +128,11 @@ public class ParrotDroneSession: NSObject {
         batteryInfoRef = adapter.drone.getInstrument(Instruments.batteryInfo) { [weak self] value in
             guard let value = value else { return }
             self?._batteryInfo = DatedValue<BatteryInfo>(value: value)
+        }
+        
+        flightPlanPilotingRef = adapter.drone.getPilotingItf(PilotingItfs.flightPlan) { [weak self] value in
+            guard let value = value else { return }
+            self?._flightPlanPiloting = DatedValue<FlightPlanPilotingItf>(value: value)
         }
         
         geofenceRef = adapter.drone.getPeripheral(Peripherals.geofence) { [weak self] value in
