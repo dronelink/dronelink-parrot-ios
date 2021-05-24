@@ -20,6 +20,7 @@ public class ParrotDroneAdapter: DroneAdapter {
     private var mainCameraRef: Ref<MainCameraDesc.ApiProtocol>?
     private var thermalCameraRef: Ref<ThermalCameraDesc.ApiProtocol>?
     private var gimbalRef: Ref<GimbalDesc.ApiProtocol>?
+    private var rcBatteryRef: Ref<BatteryInfo>?
     
     private var _flightController: ManualCopterPilotingItf?
     private var _returnHomeController: ReturnHomePilotingItf?
@@ -52,7 +53,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         mainCameraRef = drone.getPeripheral(Peripherals.mainCamera) { [weak self] mainCamera in
             if let mainCamera = mainCamera {
-                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: drone.model.description)
+                self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: "main")
             }
             else {
                 self?.mainCamera = nil
@@ -61,7 +62,7 @@ public class ParrotDroneAdapter: DroneAdapter {
         
         thermalCameraRef = drone.getPeripheral(Peripherals.thermalCamera) { [weak self] thermalCamera in
             if let thermalCamera = thermalCamera {
-                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: drone.model.description)
+                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: "thermal")
             }
             else {
                 self?.thermalCamera = nil
@@ -82,24 +83,21 @@ public class ParrotDroneAdapter: DroneAdapter {
         guard let remoteControl = remoteControl else {
             return nil
         }
-        return [ParrotRemoteControllerAdapter(remoteControl: remoteControl)]
+        return [ParrotRemoteControllerAdapter(remoteControl: remoteControl, batteryPercent: 0.0)]
     }
     
     public func remoteController(channel: UInt) -> RemoteControllerAdapter? {
         if channel == 0, let remoteControl = remoteControl {
-            return ParrotRemoteControllerAdapter(remoteControl: remoteControl)
+            return ParrotRemoteControllerAdapter(remoteControl: remoteControl, batteryPercent: 0.0)
         }
         return nil
     }
     
     public var cameras: [CameraAdapter]? {
-        if let mainCamera = mainCamera {
-            if let thermalCamera = thermalCamera {
-                return [mainCamera, thermalCamera]
-            }
+        if let mainCamera = mainCamera, mainCamera.camera.isActive {
             return [mainCamera]
         }
-        else if let thermalCamera = thermalCamera {
+        else if let thermalCamera = thermalCamera, thermalCamera.camera.isActive {
             return [thermalCamera]
         }
         return nil
@@ -282,12 +280,35 @@ public class ParrotGimbalStateAdapter: GimbalStateAdapter {
     }
 }
 
-public class ParrotRemoteControllerAdapter: RemoteControllerAdapter {
+public class ParrotRemoteControllerAdapter: RemoteControllerAdapter, RemoteControllerStateAdapter {
+    
+    public var leftStick: Kernel.RemoteControllerStick
+    
+    public var leftWheel: Kernel.RemoteControllerWheel
+    
+    public var rightStick: Kernel.RemoteControllerStick
+    
+    public var pauseButton: Kernel.RemoteControllerButton
+    
+    public var c1Button: Kernel.RemoteControllerButton
+    
+    public var c2Button: Kernel.RemoteControllerButton
+    
+    public var batteryPercent: Double
+    
     public let remoteControl: RemoteControl
     
-    public init(remoteControl: RemoteControl) {
+    public init(remoteControl: RemoteControl, batteryPercent: Double) {
         self.remoteControl = remoteControl
+        self.batteryPercent = batteryPercent
+        self.leftStick = Kernel.RemoteControllerStick(x: 0, y: 0)
+        self.leftWheel = Kernel.RemoteControllerWheel()
+        self.rightStick = Kernel.RemoteControllerStick(x: 0, y: 0)
+        self.pauseButton = Kernel.RemoteControllerButton()
+        self.c1Button = Kernel.RemoteControllerButton()
+        self.c2Button = Kernel.RemoteControllerButton()
     }
     
     public var index: UInt { 0 }
+    
 }
