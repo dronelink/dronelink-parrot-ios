@@ -477,6 +477,7 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
         return _altimeter?.value.takeoffRelativeAltitude ?? 0
     }
+    public var ultrasonicAltitude: Double? { nil }
     public var batteryPercent: Double? {
         if let batteryLevel = batteryInfo?.value.batteryLevel {
             return Double(batteryLevel) / 100

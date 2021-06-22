@@ -70,6 +70,10 @@ extension ParrotDroneSession {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
         
+        if cameraCommand is Kernel.FocusDistanceCameraCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
+        
         if cameraCommand is Kernel.FocusRingCameraCommand {
             return "MissionDisengageReason.command.type.unsupported".localized
         }
