@@ -105,6 +105,8 @@ public class ParrotDroneAdapter: DroneAdapter {
         return nil
     }
     
+    public func cameraChannel(videoFeedChannel: UInt?) -> UInt? { nil }
+    
     public func camera(channel: UInt) -> CameraAdapter? { cameras?[safeIndex: Int(channel)] }
     
     public var gimbals: [GimbalAdapter]? {
@@ -196,6 +198,8 @@ public class ParrotCameraAdapter: CameraAdapter {
     }
     
     public var index: UInt { 0 }
+    
+    public func lensIndex(videoStreamSource: Kernel.CameraVideoStreamSource) -> UInt { 0 }
 }
 
 extension ParrotCameraAdapter: CameraStateAdapter {
@@ -230,6 +234,7 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     }
     public var isCapturingContinuous: Bool { isCapturingVideo || isCapturingPhotoInterval }
     public var isSDCardInserted: Bool { return true }
+    public var videoStreamSource: Kernel.CameraVideoStreamSource { .unknown }
     public var storageLocation: Kernel.CameraStorageLocation { .sdCard }
     public var mode: Kernel.CameraMode { camera.modeSetting.mode.kernelValue }
     public var photoMode: Kernel.CameraPhotoMode? { camera.photoSettings.mode.kernelValue }
@@ -244,6 +249,7 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var aperture: Kernel.CameraAperture { .unknown }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
     public var whiteBalanceColorTemperature: Int? { camera.whiteBalanceSettings.customTemperature.rawValue }
+    public var lensIndex: UInt { 0 }
     public var lensDetails: String? { nil }
     public var focusRingValue: Double? { nil }
     public var focusRingMax: Double? { nil }

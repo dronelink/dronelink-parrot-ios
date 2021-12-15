@@ -14,6 +14,7 @@ import CoreLocation
 public class ParrotDroneSession: NSObject {
     internal static let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneSession")
     
+    public var manager: DroneSessionManager
     public let adapter: ParrotDroneAdapter
     
     private var telemetry: DatedValue<ParrotTelemetry>? { DronelinkParrot.telemetryProvider?.telemetry }
@@ -59,7 +60,8 @@ public class ParrotDroneSession: NSObject {
     public var flyingIndicators: DatedValue<FlyingIndicators>? { _flyingIndicators }
     public var batteryInfo: DatedValue<BatteryInfo>? { _batteryInfo }
     
-    public init(drone: Drone, remoteControl: RemoteControl?) {
+    public init(manager: ParrotDroneSessionManager, drone: Drone, remoteControl: RemoteControl?) {
+        self.manager = manager
         adapter = ParrotDroneAdapter(drone: drone, remoteControl: remoteControl)
         super.init()
         adapter.session = self
@@ -223,6 +225,7 @@ extension ParrotDroneSession: DroneSession {
     public var drone: DroneAdapter { adapter }
     public var state: DatedValue<DroneStateAdapter>? { DatedValue(value: self, date: telemetry?.date ?? _deviceState?.date ?? Date()) }
     public var opened: Date { _opened }
+    public var closed: Bool { _closed }
     public var id: String { _id }
     public var manufacturer: String { "Parrot" }
     public var serialNumber: String? { adapter.drone.uid }
@@ -333,12 +336,24 @@ extension ParrotDroneSession: DroneSession {
         gimbalCommands.removeAll()
     }
     
-    public func createControlSession() -> DroneControlSession { ParrotControlSession(droneSession: self) }
+    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) -> DroneControlSession? {
+        if executionEngine == .dronelinkKernel {
+            return ParrotControlSession(droneSession: self)
+        }
+        return nil
+    }
+    
+//    public func createExternalMissionManager(executionEngine: Kernel.ExecutionEngine, missionExecutor: MissionExecutor) -> ExternalMissionManager? { nil }
     
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
+        return cameraState(channel: channel, lensIndex: nil)
+    }
+    
+    public func cameraState(channel: UInt, lensIndex: UInt?) -> DatedValue<CameraStateAdapter>? {
         guard let camera = adapter.camera(channel: channel) as? ParrotCameraAdapter else { return nil }
         return DatedValue<CameraStateAdapter>(value: camera)
     }
+    
     
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
         return DatedValue<GimbalStateAdapter>(value: ParrotGimbalStateAdapter(orientation: telemetry?.value.gimbalOrientation ?? (adapter.gimbal(channel: channel) as? ParrotGimbalAdapter)?.gimbal.kernelOrientation))

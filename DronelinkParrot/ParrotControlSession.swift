@@ -22,6 +22,8 @@ public class ParrotControlSession: DroneControlSession {
         case Deactivated
     }
     
+    public let executionEngine = Kernel.ExecutionEngine.dronelinkKernel
+    public let reengaging: Bool = false
     private let droneSession: ParrotDroneSession
     
     private var state = State.TakeoffStart

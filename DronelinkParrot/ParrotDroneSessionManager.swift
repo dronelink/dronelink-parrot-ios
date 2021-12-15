@@ -31,7 +31,7 @@ public class ParrotDroneSessionManager: NSObject {
                     self.closeSession()
 
                     if let drone = autoConnection.drone {
-                        self._session = ParrotDroneSession(drone: drone, remoteControl: autoConnection.remoteControl)
+                        self._session = ParrotDroneSession(manager: self, drone: drone, remoteControl: autoConnection.remoteControl)
                         self.delegates.invoke { $0.onOpened(session: self._session!) }
                     }
                 }
