@@ -27,6 +27,7 @@
 
 "ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 "ParrotDroneSession.location.unavailable" = "Location Unavailable";
+"ParrotDroneSession.createControlSession.execution.engine.unsupported" = "Unsupported execution engine: %@";
 
 "FlyingIndicatorsState.title" = "State";
 "FlyingIndicatorsState.value.0" = "Landed";

@@ -273,8 +273,7 @@ extension ParrotDroneSession: DroneSession {
     public func add(command: KernelCommand) throws {
         if let command = command as? KernelDroneCommand {
             try droneCommands.add(command: Command(
-                id: command.id,
-                name: command.type.rawValue,
+                kernelCommand: command,
                 execute: { [weak self] finished in
                     self?.commandExecuted(command: command)
                     return self?.execute(droneCommand: command, finished: finished)
@@ -289,8 +288,7 @@ extension ParrotDroneSession: DroneSession {
 
         if let command = command as? KernelCameraCommand {
             try cameraCommands.add(channel: command.channel, command: Command(
-                id: command.id,
-                name: command.type.rawValue,
+                kernelCommand: command,
                 execute: { [weak self] finished in
                     self?.commandExecuted(command: command)
                     return self?.execute(cameraCommand: command, finished: finished)
@@ -305,8 +303,7 @@ extension ParrotDroneSession: DroneSession {
 
         if let command = command as? KernelGimbalCommand {
             try gimbalCommands.add(channel: command.channel, command: Command(
-                id: command.id,
-                name: command.type.rawValue,
+                kernelCommand: command,
                 execute: { [weak self] finished in
                     self?.commandExecuted(command: command)
                     return self?.execute(gimbalCommand: command, finished: finished)
@@ -336,11 +333,12 @@ extension ParrotDroneSession: DroneSession {
         gimbalCommands.removeAll()
     }
     
-    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) -> DroneControlSession? {
+    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) throws -> DroneControlSession {
         if executionEngine == .dronelinkKernel {
             return ParrotControlSession(droneSession: self)
         }
-        return nil
+        
+        throw String(format: "ParrotDroneSession.createControlSession.execution.engine.unsupported".localized, Dronelink.shared.formatEnum(name: "ExecutionEngine", value: executionEngine.rawValue, defaultValue: ""))
     }
     
 //    public func createExternalMissionManager(executionEngine: Kernel.ExecutionEngine, missionExecutor: MissionExecutor) -> ExternalMissionManager? { nil }
