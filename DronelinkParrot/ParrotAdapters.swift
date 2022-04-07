@@ -241,7 +241,23 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var burstCount: Kernel.CameraBurstCount? { camera.photoSettings.burstValue.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? { camera.photoSettings.bracketingValue.kernelValue }
     public var photoInterval: Int? { Int(camera.photoSettings.timelapseCaptureInterval) }
+    public var photoFileFormat: Kernel.CameraPhotoFileFormat {
+        .unknown //FIXME
+    }
+    public var videoFileFormat: Kernel.CameraVideoFileFormat {
+        .unknown //FIXME
+    }
+    
+    public var videoFrameRate: Kernel.CameraVideoFrameRate {
+        .unknown //FIXME
+    }
+    
+    public var videoResolution: Kernel.CameraVideoResolution {
+        .unknown //FIXME
+    }
     public var currentVideoTime: Double? { camera.recordingState.functionState == .started ? camera.recordingState.getDuration() : nil }
+    public var exposureMode: Kernel.CameraExposureMode { .unknown //FIXME
+    }
     public var exposureCompensation: Kernel.CameraExposureCompensation { camera.exposureCompensationSetting.value.kernelValue }
     public var iso: Kernel.CameraISO { camera.exposureSettings.manualIsoSensitivity.kernelValue }
     public var isoSensitivity: Int? { camera.exposureSettings.manualIsoSensitivity.rawValue }
@@ -253,6 +269,7 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var lensDetails: String? { nil }
     public var focusRingValue: Double? { nil }
     public var focusRingMax: Double? { nil }
+    public var aspectRatio: Kernel.CameraPhotoAspectRatio { ._16x9 }
 }
 
 public class ParrotGimbalAdapter: GimbalAdapter {

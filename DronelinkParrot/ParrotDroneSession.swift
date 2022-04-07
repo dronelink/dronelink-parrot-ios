@@ -373,7 +373,7 @@ extension ParrotDroneSession: DroneSession {
 }
 
 extension ParrotDroneSession: DroneStateAdapter {
-    public var statusMessages: [Kernel.Message]? {
+    public var statusMessages: [Kernel.Message] {
         var messages: [Kernel.Message] = []
         
         if let state = state?.value {
@@ -498,6 +498,7 @@ extension ParrotDroneSession: DroneStateAdapter {
         return nil
     }
     public var lowBatteryThreshold: Double? { 0.2 }
+    public var flightTimeRemaining: Double? { nil }
     public var obstacleDistance: Double? { nil }
     public var orientation: Kernel.Orientation3 {
         if let droneOrientation = telemetry?.value.droneOrientation {
@@ -522,4 +523,7 @@ extension ParrotDroneSession: DroneStateAdapter {
         
         return min(1.0, max(0.0, 1.0 - ((Double(min(-30, max(-80, rssi))) + 30.0) / -50.0)))
     }
+    
+    public var lightbridgeFrequencyBand: Kernel.DroneLightbridgeFrequencyBand? { nil }
+    public var ocuSyncFrequencyBand: Kernel.DroneOcuSyncFrequencyBand? { nil }
 }

@@ -520,8 +520,10 @@ extension Kernel.CameraVideoResolution {
         case ._4608x2592: return .resUhd4k
         case ._5280x2160: return .resUhd4k
         case ._5280x2972: return .resUhd4k
+        case ._5472x3078: return .resUhd4k
         case ._5760x3240: return .resUhd4k
         case ._6016x3200: return .resUhd4k
+        case ._7680x4320: return .resUhd4k
         case .max: return .resUhd4k
         case .noSSDVideo: return .resUhd4k
         case .unknown: return .resUhd4k
