@@ -40,7 +40,7 @@ public class ParrotControlSession: DroneControlSession {
         
         let state = droneSession.adapter.flightController?.state ?? .unavailable
         if self.state == .FlightControllerActivateComplete && state != .active {
-            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
         }
         
         return nil

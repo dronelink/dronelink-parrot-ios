@@ -245,7 +245,7 @@ extension ParrotDroneSession: DroneSession {
         }
         
         if telemetryDelayed {
-            return Kernel.Message(title: "MissionDisengageReason.telemetry.delayed.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.telemetry.delayed.title".localized, details: "MissionDisengageReason.telemetry.delayed.details".localized)
         }
         
         return nil
@@ -378,7 +378,7 @@ extension ParrotDroneSession: DroneStateAdapter {
         
         if let state = state?.value {
             if state.location == nil {
-                messages.append(Kernel.Message(title: "ParrotDroneSession.location.unavailable".localized, level: .warning))
+                messages.append(Kernel.Message(title: "ParrotDroneSession.location.unavailable.title".localized, details: "ParrotDroneSession.location.unavailable.details".localized, level: .warning))
             }
         }
         else {

@@ -9,8 +9,10 @@
 "MissionDisengageReason.command.type.unsupported" = "Unsupported Command Type";
 "MissionDisengageReason.drone.control.unavailable.title" = "Drone Control Unavailable";
 "MissionDisengageReason.telemetry.unavailable.title" = "Telemetry Unavailable";
-"MissionDisengageReason.telemetry.delayed.title" = "Telemetry Delayed";
-"MissionDisengageReason.drone.control.override.title" = "Control Override";
+"MissionDisengageReason.telemetry.delayed.title" = "Weak Signal";
+"MissionDisengageReason.telemetry.delayed.details" = "• Please point the RC antennas towards the drone.\n• If the signal does not improve, try moving closer to the drone.\n• If the signal still does not improve, move to an area with fewer obstacles or RF interference.";
+"MissionDisengageReason.drone.control.override.title" = "Automatic Control Interrupted";
+"MissionDisengageReason.drone.control.override.details" = "The drone must remain in P-GPS flight mode for automatic control.";
 "MissionDisengageReason.take.control.failed.title" = "Unable to Take Control";
 "MissionDisengageReason.take.off.failed.title" = "Unable to Take Off";
 "MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";
@@ -26,7 +28,9 @@
 "ParrotDroneAdapter.startLanding.unavailable" = "Unable to land";
 
 "ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
-"ParrotDroneSession.location.unavailable" = "Location Unavailable";
+"ParrotDroneSession.location.unavailable.title" = "GPS Signal Unavailable";
+"ParrotDroneSession.location.unavailable.details" = "Please wait for a strong GPS signal lock to continue.";
+
 "ParrotDroneSession.createControlSession.execution.engine.unsupported" = "Unsupported execution engine: %@";
 
 "FlyingIndicatorsState.title" = "State";
