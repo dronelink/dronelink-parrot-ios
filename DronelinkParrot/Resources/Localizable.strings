@@ -23,9 +23,11 @@
 "MissionDisengageReason.drone.camera.stop.photo.failed.title" = "Unable to Stop Photo Capture";
 "MissionDisengageReason.drone.camera.stop.video.failed.title" = "Unable to Stop Video Capture";
 
+"ParrotDroneAdapter.startTakeoff.unavailable" = "Unable to takeoff";
 "ParrotDroneAdapter.startGoHome.unavailable" = "Unable to return home";
 "ParrotDroneAdapter.startGoHome.failed" = "Return home failed";
 "ParrotDroneAdapter.startLanding.unavailable" = "Unable to land";
+"ParrotCameraAdapter.format.unavailable" = "Unable to format";
 
 "ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 "ParrotDroneSession.location.unavailable.title" = "GPS Signal Unavailable";

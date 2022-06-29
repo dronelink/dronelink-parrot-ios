@@ -163,6 +163,16 @@ public class ParrotDroneAdapter: DroneAdapter {
         flightController?.set(verticalSpeed: Int(remoteControllerSticksCommand.leftStick.y * 100))
         flightController?.set(yawRotationSpeed: Int(remoteControllerSticksCommand.leftStick.x * 100))
     }
+    
+    public func startTakeoff(finished: CommandFinished?) {
+        guard let flightController = flightController else {
+            finished?("ParrotDroneAdapter.startTakeoff.unavailable".localized)
+            return
+        }
+
+        flightController.takeOff()
+        finished?(nil)
+    }
 
     public func startGoHome(finished: CommandFinished?) {
         guard let returnHomeController = returnHomeController else {
@@ -186,6 +196,10 @@ public class ParrotDroneAdapter: DroneAdapter {
     public func sendResetVelocityCommand() {
         flightController?.hover()
     }
+    
+    public func enumElements(parameter: String) -> [EnumElement]? {
+        return nil
+    }
 }
 
 public class ParrotCameraAdapter: CameraAdapter {
@@ -200,6 +214,14 @@ public class ParrotCameraAdapter: CameraAdapter {
     public var index: UInt { 0 }
     
     public func lensIndex(videoStreamSource: Kernel.CameraVideoStreamSource) -> UInt { 0 }
+    
+    public func format(storageLocation: Kernel.CameraStorageLocation, finished: CommandFinished?) {
+        finished?("ParrotCameraAdapter.format.unavailable".localized)
+    }
+    
+    public func enumElements(parameter: String) -> [EnumElement]? {
+        return nil //FIXME
+    }
 }
 
 extension ParrotCameraAdapter: CameraStateAdapter {
@@ -236,6 +258,8 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var isSDCardInserted: Bool { return true }
     public var videoStreamSource: Kernel.CameraVideoStreamSource { .unknown }
     public var storageLocation: Kernel.CameraStorageLocation { .sdCard }
+    public var storageRemainingSpace: Int? { nil }
+    public var storageRemainingPhotos: Int? { nil }
     public var mode: Kernel.CameraMode { camera.modeSetting.mode.kernelValue }
     public var photoMode: Kernel.CameraPhotoMode? { camera.photoSettings.mode.kernelValue }
     public var burstCount: Kernel.CameraBurstCount? { camera.photoSettings.burstValue.kernelValue }
@@ -294,6 +318,36 @@ public class ParrotGimbalAdapter: GimbalAdapter {
     }
     
     public func fineTune(roll: Double) {}
+    
+    public func enumElements(parameter: String) -> [EnumElement]? {
+        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
+            return nil
+        }
+        
+        var range: [String?]?
+        
+        switch parameter {
+        case "GimbalMode":
+            range = []
+            range?.append(Kernel.GimbalMode.yawFollow.rawValue)
+            break
+        default:
+            return nil
+        }
+        
+        guard let rangeValid = range, !rangeValid.isEmpty else {
+            return nil
+        }
+        
+        var enumElements: [EnumElement] = []
+        rangeValid.forEach { value in
+            if let value = value, let display = enumDefinition[value] {
+                enumElements.append(EnumElement(display: display, value: value))
+            }
+        }
+        
+        return enumElements.isEmpty ? nil : enumElements
+    }
 }
 
 public class ParrotGimbalStateAdapter: GimbalStateAdapter {
