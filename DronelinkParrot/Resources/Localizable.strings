@@ -24,9 +24,12 @@
 "MissionDisengageReason.drone.camera.stop.video.failed.title" = "Unable to Stop Video Capture";
 
 "ParrotDroneAdapter.startTakeoff.unavailable" = "Unable to takeoff";
-"ParrotDroneAdapter.startGoHome.unavailable" = "Unable to return home";
-"ParrotDroneAdapter.startGoHome.failed" = "Return home failed";
-"ParrotDroneAdapter.startLanding.unavailable" = "Unable to land";
+"ParrotDroneAdapter.startReturnHome.unavailable" = "Unable to return home";
+"ParrotDroneAdapter.startReturnHome.failed" = "Return home failed";
+"ParrotDroneAdapter.startLand.unavailable" = "Unable to land";
+"ParrotDroneAdapter.stopLand.unavailable" = "Unable to stop landing";
+"ParrotDroneAdapter.startCompassCalibration.unavailable" = "Unable to calibrate compass";
+"ParrotDroneAdapter.stopCompassCalibration.unavailable" = "Unable to stop compass calibration";
 "ParrotCameraAdapter.format.unavailable" = "Unable to format";
 
 "ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";

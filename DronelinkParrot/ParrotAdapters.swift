@@ -174,23 +174,44 @@ public class ParrotDroneAdapter: DroneAdapter {
         finished?(nil)
     }
 
-    public func startGoHome(finished: CommandFinished?) {
+    public func startReturnHome(finished: CommandFinished?) {
         guard let returnHomeController = returnHomeController else {
-            finished?("ParrotDroneAdapter.startGoHome.unavailable".localized)
+            finished?("ParrotDroneAdapter.startReturnHome.unavailable".localized)
             return
         }
 
-        finished?(returnHomeController.activate() ? nil : "ParrotDroneAdapter.startGoHome.failed")
+        finished?(returnHomeController.activate() ? nil : "ParrotDroneAdapter.startReturnHome.failed")
+    }
+    
+    public func stopReturnHome(finished: CommandFinished?) {
+        guard let returnHomeController = returnHomeController else {
+            finished?("ParrotDroneAdapter.startReturnHome.unavailable".localized)
+            return
+        }
+
+        finished?(returnHomeController.deactivate() ? nil : "ParrotDroneAdapter.startReturnHome.failed")
     }
 
-    public func startLanding(finished: CommandFinished?) {
+    public func startLand(finished: CommandFinished?) {
         guard let flightController = flightController else {
-            finished?("ParrotDroneAdapter.startLanding.unavailable".localized)
+            finished?("ParrotDroneAdapter.startLand.unavailable".localized)
             return
         }
 
         flightController.land()
         finished?(nil)
+    }
+    
+    public func stopLand(finished: CommandFinished?) {
+        finished?("ParrotDroneAdapter.stopLand.unavailable".localized)
+    }
+    
+    public func startCompassCalibration(finished: CommandFinished?) {
+        finished?("ParrotDroneAdapter.startCompassCalibration.unavailable".localized)
+    }
+    
+    public func stopCompassCalibration(finished: CommandFinished?) {
+        finished?("ParrotDroneAdapter.stopCompassCalibration.unavailable".localized)
     }
     
     public func sendResetVelocityCommand() {

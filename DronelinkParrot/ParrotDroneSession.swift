@@ -452,6 +452,10 @@ extension ParrotDroneSession: DroneStateAdapter {
         }
     }
     public var isFlying: Bool { _flyingIndicators?.value.isFlying ?? false }
+    public var isReturningHome: Bool { adapter.returnHomeController?.state == .active }
+    public var isLanding: Bool { flyingIndicators?.value.flyingState == .landing }
+    public var isCompassCalibrating: Bool { false }
+    public var compassCalibrationMessage: Kernel.Message? { nil }
     public var location: CLLocation? {
         let instrumentLocation = _gps?.value.fixed ?? false ? _gps?.value.lastKnownLocation : nil
         if let location = telemetry?.value.location {
