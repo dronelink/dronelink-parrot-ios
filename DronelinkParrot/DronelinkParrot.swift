@@ -350,6 +350,7 @@ extension CameraBurstValue {
 extension Kernel.CameraShutterSpeed {
     var parrotValue: CameraShutterSpeed {
         switch self {
+        case .auto: return .one
         case ._1_8000: return .oneOver8000
         case ._1_6400: return .oneOver6400
         case ._1_6000: return .oneOver6400
