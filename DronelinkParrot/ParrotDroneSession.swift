@@ -378,7 +378,7 @@ extension ParrotDroneSession: DroneStateAdapter {
         
         if let state = state?.value {
             if state.location == nil {
-                messages.append(Kernel.Message(title: "ParrotDroneSession.location.unavailable.title".localized, details: "ParrotDroneSession.location.unavailable.details".localized, level: .warning))
+                messages.append(Kernel.Message(title: "ParrotDroneSession.location.unavailable.title".localized, details: "ParrotDroneSession.location.unavailable.details".localized, level: .danger))
             }
         }
         else {
@@ -427,7 +427,7 @@ extension ParrotDroneSession: DroneStateAdapter {
                     break
                     
                 case .critical:
-                    messages.append(Kernel.Message(title: alarm.description, level: .danger))
+                    messages.append(Kernel.Message(title: alarm.description, level: .warning))
                     break
                 }
             }
