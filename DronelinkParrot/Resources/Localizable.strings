@@ -30,6 +30,8 @@
 "ParrotDroneAdapter.stopLand.unavailable" = "Unable to stop landing";
 "ParrotDroneAdapter.startCompassCalibration.unavailable" = "Unable to calibrate compass";
 "ParrotDroneAdapter.stopCompassCalibration.unavailable" = "Unable to stop compass calibration";
+"ParrotDroneAdapter.startRemoteControlLinking.unavailable" = "Unable to start remote control linking";
+"ParrotDroneAdapter.stopRemoteControlLinking.unavailable" = "Unable to stop remote control linking";
 "ParrotCameraAdapter.format.unavailable" = "Unable to format";
 
 "ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
