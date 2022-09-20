@@ -65,6 +65,14 @@ extension ParrotDroneSessionManager: DroneSessionManager {
         }
     }
     
+    public func startRemoteControllerLinking(finished: CommandFinished?) {
+        finished?("ParrotDroneSessionManager.startRemoteControlLinking.unavailable".localized)
+    }
+    
+    public func stopRemoteControllerLinking(finished: CommandFinished?) {
+        finished?("ParrotDroneSessionManager.stopRemoteControlLinking.unavailable".localized)
+    }
+    
     public var session: DroneSession? { _session }
     
     public var statusMessages: [Kernel.Message] { [] }

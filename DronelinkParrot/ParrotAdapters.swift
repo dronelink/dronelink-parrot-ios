@@ -214,14 +214,6 @@ public class ParrotDroneAdapter: DroneAdapter {
         finished?("ParrotDroneAdapter.stopCompassCalibration.unavailable".localized)
     }
     
-    public func startRemoteControlLinking(finished: CommandFinished?) {
-        finished?("ParrotDroneAdapter.startRemoteControlLinking.unavailable".localized)
-    }
-    
-    public func stopRemoteControlLinking(finished: CommandFinished?) {
-        finished?("ParrotDroneAdapter.stopRemoteControlLinking.unavailable".localized)
-    }
-    
     public func sendResetVelocityCommand() {
         flightController?.hover()
     }
