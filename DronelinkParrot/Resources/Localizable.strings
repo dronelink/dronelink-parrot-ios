@@ -31,6 +31,7 @@
 "ParrotDroneAdapter.startCompassCalibration.unavailable" = "Unable to calibrate compass";
 "ParrotDroneAdapter.stopCompassCalibration.unavailable" = "Unable to stop compass calibration";
 "ParrotCameraAdapter.format.unavailable" = "Unable to format";
+"ParrotCameraAdapter.histogram.unavailable" = "Unable to enable histogram";
 
 "ParrotDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 "ParrotDroneSession.location.unavailable.title" = "GPS Signal Unavailable";
