@@ -240,6 +240,10 @@ public class ParrotCameraAdapter: CameraAdapter {
         finished?("ParrotCameraAdapter.format.unavailable".localized)
     }
     
+    public func histogram(enabled: Bool, finished: DronelinkCore.CommandFinished?) {
+        finished?("ParrotCameraAdapter.histogram.unavailable".localized)
+    }
+    
     public func enumElements(parameter: String) -> [EnumElement]? {
         return nil //FIXME
     }
@@ -311,10 +315,14 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var aperture: Kernel.CameraAperture { .unknown }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
     public var whiteBalanceColorTemperature: Int? { camera.whiteBalanceSettings.customTemperature.rawValue }
+    public var histogram: [UInt]? { nil }
     public var lensIndex: UInt { 0 }
     public var lensDetails: String? { nil }
+    public var focusMode: DronelinkCore.Kernel.CameraFocusMode { return .unknown }
     public var focusRingValue: Double? { nil }
     public var focusRingMax: Double? { nil }
+    public var meteringMode: DronelinkCore.Kernel.CameraMeteringMode { return .unknown }
+    public var isAutoExposureLockEnabled: Bool { return false }
     public var aspectRatio: Kernel.CameraPhotoAspectRatio { ._16x9 }
 }
 
