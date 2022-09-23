@@ -38,8 +38,8 @@
 
 "ParrotDroneSession.createControlSession.execution.engine.unsupported" = "Unsupported execution engine: %@";
 
-"ParrotDroneSessionManager.startRemoteControlLinking.unavailable" = "Unable to start remote control linking";
-"ParrotDroneSessionManager.stopRemoteControlLinking.unavailable" = "Unable to stop remote control linking";
+"ParrotDroneSessionManager.startRemoteControllerLinking.unavailable" = "Unable to start remote control linking";
+"ParrotDroneSessionManager.stopRemoteControllerLinking.unavailable" = "Unable to stop remote control linking";
 
 "FlyingIndicatorsState.title" = "State";
 "FlyingIndicatorsState.value.0" = "Landed";
