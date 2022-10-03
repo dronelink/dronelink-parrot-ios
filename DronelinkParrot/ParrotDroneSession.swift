@@ -333,7 +333,7 @@ extension ParrotDroneSession: DroneSession {
         gimbalCommands.removeAll()
     }
     
-    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) throws -> DroneControlSession {
+    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor?) throws -> DroneControlSession {
         if executionEngine == .dronelinkKernel {
             return ParrotControlSession(droneSession: self)
         }
