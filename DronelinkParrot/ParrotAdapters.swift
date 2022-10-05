@@ -396,5 +396,13 @@ public class ParrotRemoteControllerAdapter: RemoteControllerAdapter {
         self.remoteControl = remoteControl
     }
     
+    public func startDeviceCharging(finished: CommandFinished?) {
+        finished?("ParrotRemoteControllerAdapter.DeviceCharging.unavailable".localized)
+    }
+    
+    public func stopDeviceCharging(finished: CommandFinished?) {
+        finished?("ParrotRemoteControllerAdapter.DeviceCharging.unavailable".localized)
+    }
+    
     public var index: UInt { 0 }
 }
