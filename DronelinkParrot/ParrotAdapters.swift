@@ -313,6 +313,7 @@ extension ParrotCameraAdapter: CameraStateAdapter {
     public var shutterSpeed: Kernel.CameraShutterSpeed { camera.exposureSettings.manualShutterSpeed.kernelValue }
     public var shutterSpeedActual: Kernel.CameraShutterSpeed? { shutterSpeed }
     public var aperture: Kernel.CameraAperture { .unknown }
+    public var apertureActual: DronelinkCore.Kernel.CameraAperture { .unknown }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
     public var whiteBalanceColorTemperature: Int? { camera.whiteBalanceSettings.customTemperature.rawValue }
     public var histogram: [UInt]? { nil }

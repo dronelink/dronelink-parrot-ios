@@ -222,6 +222,7 @@ extension Kernel.CameraISO {
     var parrotValue: CameraIso {
         switch self {
         case .auto: return .iso100
+        case ._50: return .iso50
         case ._100: return .iso100
         case ._200: return .iso200
         case ._400: return .iso400
@@ -231,6 +232,8 @@ extension Kernel.CameraISO {
         case ._6400: return .iso3200
         case ._12800: return .iso3200
         case ._25600: return .iso3200
+        case ._51200: return .iso100
+        case ._102400: return .iso100
         case .unknown: return .iso100
         }
     }
@@ -290,6 +293,9 @@ extension Kernel.CameraPhotoFileFormat {
         case .rawAndJpeg: return .dngAndJpeg
         case .tiff14bit: return .jpeg
         case .radiometricJpeg: return .jpeg
+        case .radiometricJpegLow: return .jpeg
+        case .radiometricJpegHigh: return .jpeg
+        case .tiff8bit: return .jpeg
         case .tiff14bitLinearLowTempResolution: return .jpeg
         case .tiff14bitLinearHighTempResolution: return .jpeg
         case .unknown: return .jpeg
@@ -315,6 +321,10 @@ extension Kernel.CameraPhotoMode {
         case .highResolution: return .single
         case .smart: return .single
         case .internalAISpotChecking: return .single
+        case .hyperLapse: return .single
+        case .superResolution: return .single
+        case .regionalSR: return .single
+        case .vr: return .single
         }
     }
 }
@@ -351,6 +361,10 @@ extension Kernel.CameraShutterSpeed {
     var parrotValue: CameraShutterSpeed {
         switch self {
         case .auto: return .one
+        case ._1_20000: return .one
+        case ._1_16000: return .one
+        case ._1_12800: return .one
+        case ._1_10000: return .one
         case ._1_8000: return .oneOver8000
         case ._1_6400: return .oneOver6400
         case ._1_6000: return .oneOver6400
@@ -427,6 +441,12 @@ extension Kernel.CameraShutterSpeed {
         case ._23: return .one
         case ._25: return .one
         case ._30: return .one
+        case ._40: return .one
+        case ._50: return .one
+        case ._60: return .one
+        case ._80: return .one
+        case ._100: return .one
+        case ._120: return .one
         case .unknown: return .one
         }
     }
@@ -543,6 +563,7 @@ extension Kernel.CameraWhiteBalancePreset {
         case .indoorFluorescent: return .fluorescent
         case .custom: return .custom
         case .neutral: return .daylight
+        case .underwater: return .automatic
         case .unknown: return .automatic
         }
     }
