@@ -42,6 +42,8 @@
 "ParrotDroneSessionManager.startRemoteControllerLinking.unavailable" = "Unable to start remote control linking";
 "ParrotDroneSessionManager.stopRemoteControllerLinking.unavailable" = "Unable to stop remote control linking";
 
+"ParrotRemoteControllerAdapter.DeviceCharging.unavailable" = "Device charging is not available for this remote controller.";
+
 "FlyingIndicatorsState.title" = "State";
 "FlyingIndicatorsState.value.0" = "Landed";
 "FlyingIndicatorsState.value.1" = "flying";
