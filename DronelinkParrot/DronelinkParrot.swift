@@ -545,6 +545,23 @@ extension Kernel.CameraVideoResolution {
         case ._5760x3240: return .resUhd4k
         case ._6016x3200: return .resUhd4k
         case ._7680x4320: return .resUhd4k
+        case ._640x340: return .resUhd4k
+        case ._720x576: return .resUhd4k
+        case ._864x480: return .resUhd4k
+        case ._1080x1920: return .resUhd4k
+        case ._1280x1024: return .resUhd4k
+        case ._1512x2688: return .resUhd4k
+        case ._1920x960: return .resUhd4k
+        case ._2688x2016: return .resUhd4k
+        case ._2720x2040: return .resUhd4k
+        case ._2880x1620: return .resUhd4k
+        case ._5120x2700: return .resUhd4k
+        case ._5120x2880: return .resUhd4k
+        case ._5248x2952: return .resUhd4k
+        case ._5472x3648: return .resUhd4k
+        case ._5576x2952: return .resUhd4k
+        case ._8192x3424: return .resUhd4k
+        case ._8192x4320: return .resUhd4k
         case .max: return .resUhd4k
         case .noSSDVideo: return .resUhd4k
         case .unknown: return .resUhd4k
