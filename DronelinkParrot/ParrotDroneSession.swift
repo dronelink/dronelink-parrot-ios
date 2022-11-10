@@ -357,6 +357,8 @@ extension ParrotDroneSession: DroneSession {
         return DatedValue<GimbalStateAdapter>(value: ParrotGimbalStateAdapter(orientation: telemetry?.value.gimbalOrientation ?? (adapter.gimbal(channel: channel) as? ParrotGimbalAdapter)?.gimbal.kernelOrientation))
     }
     
+    public func batteryState(index: UInt) -> DronelinkCore.DatedValue<DronelinkCore.BatteryStateAdapter>? { nil }
+    
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
         //TODO
         return nil

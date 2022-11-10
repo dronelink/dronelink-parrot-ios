@@ -125,6 +125,7 @@ extension Kernel.CameraColor {
         case .vision4: return .standard
         case .vision6: return .standard
         case .trueColorExt: return .standard
+        case .film: return .standard
         case .filmA: return .standard
         case .filmB: return .standard
         case .filmC: return .standard
@@ -135,6 +136,8 @@ extension Kernel.CameraColor {
         case .filmH: return .standard
         case .filmI: return .standard
         case .hlg: return .standard
+        case .rec709: return .standard
+        case .cinelike: return .standard
         case .unknown: return .standard
         }
     }

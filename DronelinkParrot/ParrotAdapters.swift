@@ -9,6 +9,8 @@ import DronelinkCore
 import GroundSdk
 
 public class ParrotDroneAdapter: DroneAdapter {
+    public var batteries: [DronelinkCore.BatteryAdapter]?
+    
     public let drone: Drone
     public var remoteControl: RemoteControl?
     public weak var session: ParrotDroneSession?
@@ -117,6 +119,8 @@ public class ParrotDroneAdapter: DroneAdapter {
     }
     
     public func gimbal(channel: UInt) -> GimbalAdapter? { gimbals?[safeIndex: Int(channel)] }
+    
+    public func battery(channel: UInt) -> DronelinkCore.BatteryAdapter? { nil }
 
     public func send(velocityCommand: Kernel.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
