@@ -1,7 +1,7 @@
 PODS:
   - ArsdkEngine (1.8.0):
     - GroundSdk (= 1.8.0)
-  - DronelinkCore (4.0.0)
+  - DronelinkCore (4.6.0)
   - GroundSdk (1.8.0):
     - SdkCore (= 1.8.0)
   - SdkCore (1.8.0)
@@ -24,7 +24,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   ArsdkEngine: 793ed2b80f73a2e7fa7c7c06551f7ab425acd1b0
-  DronelinkCore: cee4bbf2523fea3ef9c1cfdde92b55b50655f027
+  DronelinkCore: 2458c8784c873eca02aee38633c3fd129b1df973
   GroundSdk: ecf0c70b94b0c4565a3d9284435d85d61b1718fc
   SdkCore: 41ebb0febd1dbc091368da0cc32ded6d21686fb8
 
