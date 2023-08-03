@@ -7,41 +7,51 @@
 //
 import DronelinkCore
 import GroundSdk
+import os
 
 public class ParrotDroneAdapter: DroneAdapter {
-    public var batteries: [DronelinkCore.BatteryAdapter]?
+    private static let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotDroneAdapter")
     
     public let drone: Drone
-    public var remoteControl: RemoteControl?
+    public let remoteControl: RemoteControl
     public weak var session: ParrotDroneSession?
     
-    private var flightControllerRef: Ref<ManualCopterPilotingItf>?
-    private var returnHomeControllerRef: Ref<ReturnHomePilotingItf>?
     private var copilotControllerRef: Ref<CopilotDesc.ApiProtocol>?
+    private var manualFlightControllerRef: Ref<ManualCopterPilotingItf>?
+    private var guidedFlightControllerRef: Ref<GuidedPilotingItf>?
+    private var returnHomeControllerRef: Ref<ReturnHomePilotingItf>?
     private var geoFenceRef: Ref<GeofenceDesc.ApiProtocol>?
-    private var mainCameraRef: Ref<MainCameraDesc.ApiProtocol>?
-    private var thermalCameraRef: Ref<ThermalCameraDesc.ApiProtocol>?
+    private var mainCamera2Ref: Ref<MainCamera2Desc.ApiProtocol>?
     private var gimbalRef: Ref<GimbalDesc.ApiProtocol>?
     
-    private var _flightController: ManualCopterPilotingItf?
+    private var _copilot: Copilot?
+    private var _manualFlightController: ManualCopterPilotingItf?
+    private var _guidedFlightController: GuidedPilotingItf?
     private var _returnHomeController: ReturnHomePilotingItf?
-    private var _copilotController: Copilot?
     private var _geoFence: Geofence?
     private var mainCamera: ParrotCameraAdapter?
-    private var thermalCamera: ParrotCameraAdapter?
     private var gimbal: ParrotGimbalAdapter?
     
-    public var flightController: ManualCopterPilotingItf? { _flightController }
-    public var copilotController: Copilot? { _copilotController }
+    public var copilot: Copilot? { _copilot }
+    public var manualFlightController: ManualCopterPilotingItf? { _manualFlightController }
+    public var guidedFlightController: GuidedPilotingItf? { _guidedFlightController }
     public var returnHomeController: ReturnHomePilotingItf? { _returnHomeController }
     public var geoFence: Geofence? { _geoFence }
-
-    public init(drone: Drone, remoteControl: RemoteControl?) {
+    
+    public init(drone: Drone, remoteControl: RemoteControl) {
         self.drone = drone
         self.remoteControl = remoteControl
         
-        flightControllerRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] itf in
-            self?._flightController = itf
+        copilotControllerRef = remoteControl.getPeripheral(Peripherals.copilot)  { [weak self] copilot in
+            self?._copilot = copilot
+        }
+        
+        manualFlightControllerRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [weak self] itf in
+            self?._manualFlightController = itf
+        }
+        
+        guidedFlightControllerRef = drone.getPilotingItf(PilotingItfs.guided) { [weak self] itf in
+            self?._guidedFlightController = itf
         }
         
         returnHomeControllerRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] itf in
@@ -52,7 +62,8 @@ public class ParrotDroneAdapter: DroneAdapter {
             self?._geoFence = geoFence
         }
         
-        mainCameraRef = drone.getPeripheral(Peripherals.mainCamera) { [weak self] mainCamera in
+        
+        mainCamera2Ref = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] mainCamera in
             if let mainCamera = mainCamera {
                 self?.mainCamera = ParrotCameraAdapter(camera: mainCamera, model: drone.model.description)
             }
@@ -61,18 +72,9 @@ public class ParrotDroneAdapter: DroneAdapter {
             }
         }
         
-        thermalCameraRef = drone.getPeripheral(Peripherals.thermalCamera) { [weak self] thermalCamera in
-            if let thermalCamera = thermalCamera {
-                self?.thermalCamera = ParrotCameraAdapter(camera: thermalCamera, model: drone.model.description)
-            }
-            else {
-                self?.thermalCamera = nil
-            }
-        }
-        
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
             if let gimbal = gimbal {
-                self?.gimbal = ParrotGimbalAdapter(gimbal: gimbal)
+                self?.gimbal = ParrotGimbalAdapter(gimbal: gimbal) { self?.session?.state?.value.orientation.z }
             }
             else {
                 self?.gimbal = nil
@@ -80,15 +82,10 @@ public class ParrotDroneAdapter: DroneAdapter {
         }
     }
     
-    public var remoteControllers: [RemoteControllerAdapter]? {
-        guard let remoteControl = remoteControl else {
-            return nil
-        }
-        return [ParrotRemoteControllerAdapter(remoteControl: remoteControl)]
-    }
+    public var remoteControllers: [RemoteControllerAdapter]? { [ParrotRemoteControllerAdapter(remoteControl: remoteControl)] }
     
     public func remoteController(channel: UInt) -> RemoteControllerAdapter? {
-        if channel == 0, let remoteControl = remoteControl {
+        if channel == 0 {
             return ParrotRemoteControllerAdapter(remoteControl: remoteControl)
         }
         return nil
@@ -96,13 +93,7 @@ public class ParrotDroneAdapter: DroneAdapter {
     
     public var cameras: [CameraAdapter]? {
         if let mainCamera = mainCamera {
-            if let thermalCamera = thermalCamera {
-                return [mainCamera, thermalCamera]
-            }
             return [mainCamera]
-        }
-        else if let thermalCamera = thermalCamera {
-            return [thermalCamera]
         }
         return nil
     }
@@ -118,29 +109,48 @@ public class ParrotDroneAdapter: DroneAdapter {
         return nil
     }
     
+    public var batteries: [DronelinkCore.BatteryAdapter]? { nil }
+    
     public func gimbal(channel: UInt) -> GimbalAdapter? { gimbals?[safeIndex: Int(channel)] }
     
     public func battery(channel: UInt) -> DronelinkCore.BatteryAdapter? { nil }
+    
+    public var rtk: DronelinkCore.RTKAdapter? { nil }
+    
+    public var liveStreaming: DronelinkCore.LiveStreamingAdapter? { nil }
 
     public func send(velocityCommand: Kernel.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
-            sendResetVelocityCommand()
+            sendResetVelocityDroneCommand()
             return
         }
         
         guard
-            let flightController = flightController,
+            let manualFlightController = manualFlightController,
             let orientation = session?.state?.value.orientation
         else {
             return
         }
         
         //offset the velocity vector by the heading of the drone
-        var horizontal = velocityCommand.velocity.horizontal
-        horizontal = Kernel.Vector2(direction: horizontal.direction - orientation.yaw, magnitude: horizontal.magnitude)
-        let pitch = -Int(max(-1, min(1, horizontal.x / DronelinkParrot.maxVelocityHorizontal)) * 100)
-        let roll = Int(max(-1, min(1, horizontal.y / DronelinkParrot.maxVelocityHorizontal)) * 100)
-        let verticalSpeed = Int(max(-1, min(1, velocityCommand.velocity.vertical / flightController.maxVerticalSpeed.value)) * 100)
+        //var horizontalVelocity = velocityCommand.velocity.horizontal
+        //horizontalVelocity = Kernel.Vector2(direction: horizontalVelocity.direction - orientation.yaw, magnitude: horizontalVelocity.magnitude)
+        //let pitch = Int(max(-1, min(1, -horizontalVelocity.x / DronelinkParrot.maxVelocityHorizontal)) * 100)
+        //let roll = Int(max(-1, min(1, horizontalVelocity.y / DronelinkParrot.maxVelocityHorizontal)) * 100)
+        //let horizontalVelocity = velocityCommand.velocity.horizontal
+        //var horizontalVelocityNormalized = Kernel.Vector2(direction: horizontalVelocity.direction.angleDifferenceSigned(angle: orientation.yaw), magnitude: min(horizontalVelocity.magnitude, DronelinkParrot.maxVelocityHorizontal) / DronelinkParrot.maxVelocityHorizontal)
+        //let maxMagnitude = abs(sin(horizontalVelocityNormalized.direction)) + abs(cos(horizontalVelocityNormalized.direction))
+        //horizontalVelocityNormalized = Kernel.Vector2(direction: horizontalVelocityNormalized.direction, magnitude: horizontalVelocityNormalized.magnitude * maxMagnitude)
+        //let pitch = Int(max(-1, min(1, -horizontalVelocityNormalized.x)) * 100)
+        //let roll = Int(max(-1, min(1, horizontalVelocityNormalized.y)) * 100)
+        let horizontalVelocity = velocityCommand.velocity.horizontal
+        let horizontalVelocityNormalized = Kernel.Vector2(
+            direction: horizontalVelocity.direction.angleDifferenceSigned(angle: orientation.yaw),
+            magnitude: horizontalVelocity.magnitude / DronelinkParrot.maxVelocityHorizontal)
+        let pitch = Int(max(-1, min(1, -horizontalVelocityNormalized.x)) * 100)
+        let roll = Int(max(-1, min(1, horizontalVelocityNormalized.y)) * 100)
+        //os_log(.debug, log: ParrotDroneAdapter.log, "FIXME m=%{public}s p=%{public}s r=%{public}s", "\(horizontalVelocityNormalized.magnitude)", "\(pitch)", "\(roll)")
+        let verticalSpeed = Int(max(-1, min(1, velocityCommand.velocity.vertical / manualFlightController.maxVerticalSpeed.value)) * 100)
         var rotationalSpeed = 0.0
         if let heading = velocityCommand.heading {
             rotationalSpeed = heading.angleDifferenceSigned(angle: orientation.yaw).convertRadiansToDegrees
@@ -148,28 +158,37 @@ public class ParrotDroneAdapter: DroneAdapter {
         else {
             rotationalSpeed = velocityCommand.velocity.rotational.convertRadiansToDegrees
         }
-        rotationalSpeed = max(-1, min(1, rotationalSpeed / flightController.maxYawRotationSpeed.max)) * 100
+        rotationalSpeed = max(-1, min(1, rotationalSpeed / manualFlightController.maxYawRotationSpeed.value)) * 100
         
-        flightController.set(pitch: pitch)
-        flightController.set(roll: roll)
-        flightController.set(verticalSpeed: verticalSpeed)
-        flightController.set(yawRotationSpeed: Int(rotationalSpeed))
+        manualFlightController.set(pitch: pitch)
+        manualFlightController.set(roll: roll)
+        manualFlightController.set(verticalSpeed: verticalSpeed)
+        manualFlightController.set(yawRotationSpeed: Int(rotationalSpeed))
+        
+        //can't use this right now because horizontal has no direction?
+//        guidedFlightController.move(
+//            directive: GuidedDirective(
+//                guidedType: GuidedType.relativeMove,
+//                speed: GuidedPilotingSpeed(
+//                    horizontalSpeed: horizontal.magnitude,
+//                    verticalSpeed: velocityCommand.velocity.vertical,
+//                    yawRotationSpeed: rotationalSpeed)))
     }
     
     public func send(remoteControllerSticksCommand: Kernel.RemoteControllerSticksDroneCommand?) {
         guard let remoteControllerSticksCommand = remoteControllerSticksCommand else {
-            sendResetVelocityCommand()
+            sendResetVelocityDroneCommand()
             return
         }
         
-        flightController?.set(pitch: Int(remoteControllerSticksCommand.rightStick.y * 100))
-        flightController?.set(roll: Int(remoteControllerSticksCommand.rightStick.x * 100))
-        flightController?.set(verticalSpeed: Int(remoteControllerSticksCommand.leftStick.y * 100))
-        flightController?.set(yawRotationSpeed: Int(remoteControllerSticksCommand.leftStick.x * 100))
+        manualFlightController?.set(pitch: -Int(remoteControllerSticksCommand.rightStick.y * 100))
+        manualFlightController?.set(roll: Int(remoteControllerSticksCommand.rightStick.x * 100))
+        manualFlightController?.set(verticalSpeed: Int(remoteControllerSticksCommand.leftStick.y * 100))
+        manualFlightController?.set(yawRotationSpeed: Int(remoteControllerSticksCommand.leftStick.x * 100))
     }
     
     public func startTakeoff(finished: CommandFinished?) {
-        guard let flightController = flightController else {
+        guard let flightController = manualFlightController else {
             finished?("ParrotDroneAdapter.startTakeoff.unavailable".localized)
             return
         }
@@ -197,12 +216,12 @@ public class ParrotDroneAdapter: DroneAdapter {
     }
 
     public func startLand(finished: CommandFinished?) {
-        guard let flightController = flightController else {
+        guard let manualFlightController = manualFlightController else {
             finished?("ParrotDroneAdapter.startLand.unavailable".localized)
             return
         }
 
-        flightController.land()
+        manualFlightController.land()
         finished?(nil)
     }
     
@@ -218,8 +237,32 @@ public class ParrotDroneAdapter: DroneAdapter {
         finished?("ParrotDroneAdapter.stopCompassCalibration.unavailable".localized)
     }
     
-    public func sendResetVelocityCommand() {
-        flightController?.hover()
+    public func sendResetVelocityDroneCommand() {
+        manualFlightController?.hover()
+    }
+    
+    public func sendResetVelocityGimbalCommand() {
+        gimbals?.forEach({ adapter in
+            if let adapter = adapter as? ParrotGimbalAdapter {
+                adapter.gimbal.control(mode: .velocity, yaw: 0, pitch: 0, roll: 0)
+            }
+        })
+    }
+    
+    public func sendResetGimbalCommands() {
+        gimbals?.forEach {
+            if let adapter = $0 as? ParrotGimbalAdapter {
+                adapter.reset()
+            }
+        }
+    }
+    
+    public func sendResetCameraCommands() {
+        cameras?.forEach {
+            if let adapter = $0 as? ParrotCameraAdapter {
+                adapter.reset()
+            }
+        }
     }
     
     public func enumElements(parameter: String) -> [EnumElement]? {
@@ -228,12 +271,62 @@ public class ParrotDroneAdapter: DroneAdapter {
 }
 
 public class ParrotCameraAdapter: CameraAdapter {
-    public let camera: Camera
+    public let camera: Camera2
     public let model: String?
     
-    public init(camera: Camera, model: String?) {
+    private var exposureIndicatorRef: Ref<Camera2ExposureIndicator>?
+    private var exposureLockRef: Ref<Camera2ExposureLock>?
+    private var whiteBalanceLockRef: Ref<Camera2WhiteBalanceLock>?
+    private var mediaMetadataRef: Ref<Camera2MediaMetadata>?
+    private var recordingRef: Ref<Camera2Recording>?
+    private var photoCaptureRef: Ref<Camera2PhotoCapture>?
+    private var photoProgressIndicatorRef: Ref<Camera2PhotoProgressIndicator>?
+    private var zoomRef: Ref<Camera2Zoom>?
+    
+    private var exposureIndicator: Camera2ExposureIndicator?
+    private var exposureLock: Camera2ExposureLock?
+    private var whiteBalanceLock: Camera2WhiteBalanceLock?
+    private var mediaMetadata: Camera2MediaMetadata?
+    public var recording: Camera2Recording?
+    public var photoCapture: Camera2PhotoCapture?
+    private var photoProgressIndicator: Camera2PhotoProgressIndicator?
+    private var zoom: Camera2Zoom?
+    
+    public init(camera: Camera2, model: String?) {
         self.camera = camera
         self.model = model
+        
+        exposureIndicatorRef = camera.getComponent(Camera2Components.exposureIndicator) { [weak self] value in
+            self?.exposureIndicator = value
+        }
+
+        exposureLockRef = camera.getComponent(Camera2Components.exposureLock) { [weak self] value in
+            self?.exposureLock = value
+        }
+
+        whiteBalanceLockRef = camera.getComponent(Camera2Components.whiteBalanceLock) { [weak self] value in
+            self?.whiteBalanceLock = value
+        }
+
+        mediaMetadataRef = camera.getComponent(Camera2Components.mediaMetadata) { [weak self] value in
+            self?.mediaMetadata = value
+        }
+
+        recordingRef = camera.getComponent(Camera2Components.recording) { [weak self] value in
+            self?.recording = value
+        }
+
+        photoCaptureRef = camera.getComponent(Camera2Components.photoCapture) { [weak self] value in
+            self?.photoCapture = value
+        }
+
+        photoProgressIndicatorRef = camera.getComponent(Camera2Components.photoProgressIndicator) { [weak self] value in
+            self?.photoProgressIndicator = value
+        }
+
+        zoomRef = camera.getComponent(Camera2Components.zoom) { [weak self] value in
+            self?.zoom = value
+        }
     }
     
     public var index: UInt { 0 }
@@ -249,93 +342,117 @@ public class ParrotCameraAdapter: CameraAdapter {
     }
     
     public func enumElements(parameter: String) -> [EnumElement]? {
-        return nil //FIXME
+        switch parameter {
+        case "CameraPhotoInterval":
+            return (2...10).map {
+                EnumElement(display: "\($0) s", value: $0)
+            }
+        default:
+            break
+        }
+        
+        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
+            return nil
+        }
+        
+        var range: [String?]?
+        
+        switch parameter {
+        case "CameraMode":
+            range =  [
+                Kernel.CameraMode.photo.rawValue,
+                Kernel.CameraMode.video.rawValue,
+            ]
+            break
+        case "CameraPhotoMode":
+            range = [
+                Kernel.CameraPhotoMode.single.rawValue,
+                Kernel.CameraPhotoMode.interval.rawValue,
+                Kernel.CameraPhotoMode.aeb.rawValue,
+                Kernel.CameraPhotoMode.burst.rawValue
+            ]
+            break
+        default:
+            return nil
+        }
+        
+        var enumElements: [EnumElement] = []
+        range?.forEach { value in
+            if let value = value, value != "unknown", let display = enumDefinition[value] {
+                enumElements.append(EnumElement(display: display, value: value))
+            }
+        }
+        
+        return enumElements.isEmpty ? nil : enumElements
+    }
+    
+    public func reset() {
+        if photoCapture?.state.canStop ?? false {
+            photoCapture?.stop()
+        }
+        else if recording?.state.canStop ?? false {
+            recording?.stop()
+        }
     }
 }
 
 extension ParrotCameraAdapter: CameraStateAdapter {
     public var isBusy: Bool { false }
-    public var isCapturing: Bool { isCapturingVideo || isCapturingPhoto }
-    public var isCapturingPhotoInterval: Bool { mode == .photo && photoMode == .interval && isCapturingPhoto }
-    public var isCapturingPhoto: Bool {
-        switch camera.modeSetting.mode {
-        case .recording: return false
-        case .photo:
-            switch camera.photoState.functionState {
-            case .unavailable, .stopped, .errorInsufficientStorageSpace, .errorInternal: return false
-            case .started, .stopping: return true
-            @unknown default: return false
-            }
-            
-        @unknown default: return false
-        }
-    }
-    public var isCapturingVideo: Bool {
-        switch camera.modeSetting.mode {
-        case .recording:
-            switch camera.recordingState.functionState {
-            case .unavailable, .stopped, .stoppedForReconfiguration, .errorInsufficientStorageSpace, .errorInsufficientStorageSpeed, .errorInternal: return false
-            case .starting, .started, .stopping: return true
-            @unknown default: return false
-            }
-            
-        case .photo: return false
-        @unknown default: return false
-        }
-    }
+    public var isCapturing: Bool { (recording?.state.canStop ?? false) || (photoCapture?.state.canStop ?? false) }
+    public var isCapturingPhoto: Bool { isCapturing && mode == .photo }
+    public var isCapturingPhotoInterval: Bool { isCapturingPhoto && (camera.config[Camera2Params.photoMode]?.value == Camera2PhotoMode.timeLapse || camera.config[Camera2Params.photoMode]?.value == Camera2PhotoMode.gpsLapse) }
+    public var isCapturingVideo: Bool { isCapturing && mode == .video }
     public var isCapturingContinuous: Bool { isCapturingVideo || isCapturingPhotoInterval }
-    public var isSDCardInserted: Bool { return true }
+    public var isSDCardInserted: Bool { true }
     public var videoStreamSource: Kernel.CameraVideoStreamSource { .unknown }
     public var storageLocation: Kernel.CameraStorageLocation { .sdCard }
     public var storageRemainingSpace: Int? { nil }
     public var storageRemainingPhotos: Int? { nil }
-    public var mode: Kernel.CameraMode { camera.modeSetting.mode.kernelValue }
-    public var photoMode: Kernel.CameraPhotoMode? { camera.photoSettings.mode.kernelValue }
-    public var burstCount: Kernel.CameraBurstCount? { camera.photoSettings.burstValue.kernelValue }
-    public var aebCount: Kernel.CameraAEBCount? { camera.photoSettings.bracketingValue.kernelValue }
-    public var photoInterval: Int? { Int(camera.photoSettings.timelapseCaptureInterval) }
-    public var photoFileFormat: Kernel.CameraPhotoFileFormat {
-        .unknown //FIXME
-    }
-    public var videoFileFormat: Kernel.CameraVideoFileFormat {
-        .unknown //FIXME
-    }
-    
-    public var videoFrameRate: Kernel.CameraVideoFrameRate {
-        .unknown //FIXME
-    }
-    
-    public var videoResolution: Kernel.CameraVideoResolution {
-        .unknown //FIXME
-    }
-    public var currentVideoTime: Double? { camera.recordingState.functionState == .started ? camera.recordingState.getDuration() : nil }
-    public var exposureMode: Kernel.CameraExposureMode { .unknown //FIXME
-    }
-    public var exposureCompensation: Kernel.CameraExposureCompensation { camera.exposureCompensationSetting.value.kernelValue }
-    public var iso: Kernel.CameraISO { camera.exposureSettings.manualIsoSensitivity.kernelValue }
-    public var isoActual: Int? { camera.exposureSettings.manualIsoSensitivity.rawValue }
-    public var shutterSpeed: Kernel.CameraShutterSpeed { camera.exposureSettings.manualShutterSpeed.kernelValue }
+    public var mode: Kernel.CameraMode { camera.config[Camera2Params.mode]?.value.kernelValue ?? .unknown }
+    public var photoMode: Kernel.CameraPhotoMode? { camera.config[Camera2Params.photoMode]?.value.kernelValue ?? .unknown }
+    public var burstCount: Kernel.CameraBurstCount? { camera.config[Camera2Params.photoBurst]?.value.kernelValue ?? .unknown }
+    public var aebCount: Kernel.CameraAEBCount? { camera.config[Camera2Params.photoBracketing]?.value.kernelValue ?? .unknown }
+    public var photoInterval: Int? { Int(camera.config[Camera2Params.photoTimelapseInterval]?.value.magnitude ?? 0) } //FIXME confirm
+    public var photoFileFormat: Kernel.CameraPhotoFileFormat { camera.config[Camera2Params.photoFileFormat]?.value.kernelValue ?? .unknown  }
+    public var videoFileFormat: Kernel.CameraVideoFileFormat { .mp4 }
+    public var videoFrameRate: Kernel.CameraVideoFrameRate { camera.config[Camera2Params.videoRecordingFramerate]?.value.kernelValue ?? .unknown }
+    public var videoResolution: Kernel.CameraVideoResolution { camera.config[Camera2Params.videoRecordingResolution]?.value.kernelValue ?? .unknown }
+    public var currentVideoTime: Double? { nil } //TODO
+    public var exposureMode: Kernel.CameraExposureMode { camera.config[Camera2Params.exposureMode]?.value.kernelValue ?? .unknown }
+    public var exposureCompensation: Kernel.CameraExposureCompensation { camera.config[Camera2Params.exposureCompensation]?.value.kernelValue ?? .unknown  }
+    public var iso: Kernel.CameraISO { camera.config[Camera2Params.isoSensitivity]?.value.kernelValue ?? .unknown }
+    public var isoActual: Int? { nil } //TODO
+    public var shutterSpeed: Kernel.CameraShutterSpeed { .unknown } //TODO
     public var shutterSpeedActual: Kernel.CameraShutterSpeed? { shutterSpeed }
-    public var aperture: Kernel.CameraAperture { .unknown }
-    public var apertureActual: DronelinkCore.Kernel.CameraAperture { .unknown }
-    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { camera.whiteBalanceSettings.mode.kernelValue }
-    public var whiteBalanceColorTemperature: Int? { camera.whiteBalanceSettings.customTemperature.rawValue }
+    public var aperture: Kernel.CameraAperture { .unknown } //TODO
+    public var apertureActual: DronelinkCore.Kernel.CameraAperture { .unknown } //TODO
+    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { .unknown } //TODO
+    public var whiteBalanceColorTemperature: Int? { nil } //TODO
     public var histogram: [UInt]? { nil }
     public var lensIndex: UInt { 0 }
     public var lensDetails: String? { nil }
     public var focusMode: DronelinkCore.Kernel.CameraFocusMode { return .unknown }
     public var focusRingValue: Double? { nil }
     public var focusRingMax: Double? { nil }
+    public var isPercentZoomSupported: Bool { false }
+    public var isRatioZoomSupported: Bool { false }
+    public var defaultZoomSpecification: DronelinkCore.Kernel.PercentZoomSpecification? { nil }
     public var meteringMode: DronelinkCore.Kernel.CameraMeteringMode { return .unknown }
     public var isAutoExposureLockEnabled: Bool { return false }
     public var aspectRatio: Kernel.CameraPhotoAspectRatio { ._16x9 }
 }
 
 public class ParrotGimbalAdapter: GimbalAdapter {
-    public let gimbal: Gimbal
+    private static let log = OSLog(subsystem: "DronelinkParrot", category: "ParrotGimbalAdapter")
     
-    public init(gimbal: Gimbal) {
+    public let gimbal: Gimbal
+    private let heading: () -> Double?
+    
+    public init(gimbal: Gimbal, heading: @escaping () -> Double?) {
         self.gimbal = gimbal
+        self.heading = heading
+        gimbal.stabilizationSettings[.pitch]?.value = true
+        gimbal.maxSpeedSettings[.pitch]?.value = 90
     }
     
     public var index: UInt { 0 }
@@ -349,7 +466,12 @@ public class ParrotGimbalAdapter: GimbalAdapter {
     }
     
     public func reset() {
-        gimbal.control(mode: .position, yaw: 0, pitch: 0, roll: 0)
+        if abs(orientation.pitch) < 0.1.convertDegreesToRadians {
+            gimbal.control(mode: .position, yaw: 0, pitch: -90, roll: 0)
+        }
+        else {
+            gimbal.resetAttitude()
+        }
     }
     
     public func fineTune(roll: Double) {}
@@ -385,12 +507,12 @@ public class ParrotGimbalAdapter: GimbalAdapter {
     }
 }
 
-public class ParrotGimbalStateAdapter: GimbalStateAdapter {
+extension ParrotGimbalAdapter: GimbalStateAdapter {
     public var mode: Kernel.GimbalMode { .yawFollow }
-    public var orientation: Kernel.Orientation3
     
-    public init(orientation: Kernel.Orientation3? = nil) {
-        self.orientation = orientation ?? Kernel.Orientation3()
+    public var orientation: Kernel.Orientation3 {
+        let orientation = gimbal.kernelOrientation
+        return Kernel.Orientation3(x: orientation.x, y: orientation.y, z: heading() ?? orientation.z)
     }
 }
 

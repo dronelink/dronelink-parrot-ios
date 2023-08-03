@@ -27,17 +27,12 @@ public class ParrotDroneSessionManager: NSObject {
                     autoConnection.start()
                 }
                 
-                if (self._session?.serialNumber != autoConnection.drone?.uid) {
+                if self._session?.serialNumber != autoConnection.drone?.uid {
                     self.closeSession()
-
-                    if let drone = autoConnection.drone {
-                        self._session = ParrotDroneSession(manager: self, drone: drone, remoteControl: autoConnection.remoteControl)
+                    if let drone = autoConnection.drone, let remoteControl = autoConnection.remoteControl {
+                        self._session = ParrotDroneSession(manager: self, drone: drone, remoteControl: remoteControl)
                         self.delegates.invoke { $0.onOpened(session: self._session!) }
                     }
-                }
-                
-                if (self._session?.adapter.remoteControl?.uid != autoConnection.remoteControl?.uid) {
-                    self._session?.adapter.remoteControl = autoConnection.remoteControl
                 }
             }
         }

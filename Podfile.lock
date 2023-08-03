@@ -1,33 +1,38 @@
 PODS:
-  - ArsdkEngine (1.8.0):
-    - GroundSdk (= 1.8.0)
-  - DronelinkCore (4.6.0)
-  - GroundSdk (1.8.0):
-    - SdkCore (= 1.8.0)
-  - SdkCore (1.8.0)
+  - ArsdkEngine (7.5.0):
+    - GroundSdk (= 7.5.0)
+    - SwiftProtobuf (= 1.13.0)
+  - DronelinkCore (4.7.0)
+  - GroundSdk (7.5.0):
+    - SdkCore (= 7.5.0)
+    - SwiftProtobuf (= 1.13.0)
+  - SdkCore (7.5.0)
+  - SwiftProtobuf (1.13.0)
 
 DEPENDENCIES:
-  - ArsdkEngine (~> 1.8.0)
+  - ArsdkEngine (~> 7.5.0)
   - DronelinkCore (from `../../private/dronelink-core-ios`)
-  - GroundSdk (~> 1.8.0)
-  - SdkCore (~> 1.8.0)
+  - GroundSdk (~> 7.5.0)
+  - SdkCore (~> 7.5.0)
 
 SPEC REPOS:
   trunk:
     - ArsdkEngine
     - GroundSdk
     - SdkCore
+    - SwiftProtobuf
 
 EXTERNAL SOURCES:
   DronelinkCore:
     :path: "../../private/dronelink-core-ios"
 
 SPEC CHECKSUMS:
-  ArsdkEngine: 793ed2b80f73a2e7fa7c7c06551f7ab425acd1b0
-  DronelinkCore: 2458c8784c873eca02aee38633c3fd129b1df973
-  GroundSdk: ecf0c70b94b0c4565a3d9284435d85d61b1718fc
-  SdkCore: 41ebb0febd1dbc091368da0cc32ded6d21686fb8
+  ArsdkEngine: 3c34eafb988289eafb7bd27dd48a79c017bfab95
+  DronelinkCore: bf3bb0b9171c111d724853f9ace1903acea5ea93
+  GroundSdk: 5f8707ba7c9b099485c6484829ee35f7f3f53d59
+  SdkCore: 358988a3d71325acf84c03582afac05d8f386592
+  SwiftProtobuf: fd4693388a96c8c2df35d3b063272b0e7c499d00
 
-PODFILE CHECKSUM: c1145afd4711b73bf2dbf31893e08ab6fdb4be7b
+PODFILE CHECKSUM: 8eff5c902128fe62cdbcd0db0e84310bf269c33c
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.12.1

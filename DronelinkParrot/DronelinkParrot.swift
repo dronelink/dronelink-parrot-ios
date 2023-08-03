@@ -15,8 +15,7 @@ extension DronelinkParrot {
 }
 
 public class DronelinkParrot {
-    public static var maxVelocityHorizontal: Double { 10.0 }
-    public static var telemetryProvider: ParrotTelemetryProvider?
+    public static var maxVelocityHorizontal: Double { 14 }
 }
 
 extension Speedometer {
@@ -84,7 +83,7 @@ extension Kernel.CameraAEBCount {
     }
 }
 
-extension CameraBracketingValue {
+extension Camera2BracketingValue {
     var kernelValue: Kernel.CameraAEBCount {
         switch self {
         case .preset1ev: return ._3
@@ -183,7 +182,7 @@ extension Kernel.CameraExposureCompensation {
     }
 }
 
-extension CameraEvCompensation {
+extension Camera2EvCompensation {
     var kernelValue: Kernel.CameraExposureCompensation {
         switch self {
         case .evMinus3_00: return .n30
@@ -221,6 +220,19 @@ extension Kernel.CameraExposureMode {
     }
 }
 
+extension Camera2ExposureMode {
+    var kernelValue: Kernel.CameraExposureMode {
+        switch self {
+        case .automatic: return .program
+        case .automaticPreferIsoSensitivity: return .unknown
+        case .automaticPreferShutterSpeed: return .unknown
+        case .manualIsoSensitivity: return .shutterPriority
+        case .manualShutterSpeed: return .aperturePriority
+        case .manual: return .manual
+        }
+    }
+}
+
 extension Kernel.CameraISO {
     var parrotValue: CameraIso {
         switch self {
@@ -242,32 +254,47 @@ extension Kernel.CameraISO {
     }
 }
 
-extension CameraIso {
+extension Camera2Iso {
     var kernelValue: Kernel.CameraISO {
         switch self {
-        case .iso50: return ._100
-        case .iso64: return ._100
-        case .iso80: return ._100
+        case .iso25: return .unknown
+        case .iso50: return ._50
+        case .iso64: return .unknown
+        case .iso80: return .unknown
         case .iso100: return ._100
         case .iso125: return ._100
         case .iso160: return ._100
         case .iso200: return ._200
-        case .iso250: return ._200
-        case .iso320: return ._200
+        case .iso250: return .unknown
+        case .iso320: return .unknown
         case .iso400: return ._400
         case .iso500: return ._400
-        case .iso640: return ._400
+        case .iso640: return .unknown
         case .iso800: return ._800
-        case .iso1200: return ._800
-        case .iso1600: return ._1600
-        case .iso2500: return ._1600
-        case .iso3200: return ._3200
+        case .iso1000: return .unknown
+        case .iso1200: return .unknown
+        case .iso1600: return .unknown
+        case .iso2000: return .unknown
+        case .iso2500: return .unknown
+        case .iso3200: return .unknown
+        case .iso4000: return .unknown
+        case .iso5000: return .unknown
+        case .iso6400: return .unknown
+        case .iso8000: return .unknown
+        case .iso10000: return .unknown
+        case .iso12800: return .unknown
+        case .iso16000: return .unknown
+        case .iso20000: return .unknown
+        case .iso25600: return .unknown
+        case .iso32000: return .unknown
+        case .iso40000: return .unknown
+        case .iso51200: return .unknown
         }
     }
 }
 
 extension Kernel.CameraMode {
-    var parrotValue: CameraMode {
+    var parrotValue: Camera2Mode {
         switch self {
         case .photo: return .photo
         case .video: return .recording
@@ -279,11 +306,20 @@ extension Kernel.CameraMode {
     }
 }
 
-extension CameraMode {
+extension Camera2Mode {
     var kernelValue: Kernel.CameraMode {
         switch self {
         case .recording: return .video
         case .photo: return .photo
+        }
+    }
+}
+
+extension Camera2PhotoFileFormat {
+    var kernelValue: Kernel.CameraPhotoFileFormat {
+        switch self {
+        case .jpeg: return .jpeg
+        case .dngAndJpeg: return .rawAndJpeg
         }
     }
 }
@@ -307,7 +343,7 @@ extension Kernel.CameraPhotoFileFormat {
 }
 
 extension Kernel.CameraPhotoMode {
-    var parrotValue: CameraPhotoMode {
+    var parrotValue: Camera2PhotoMode {
         switch self {
         case .single: return .single
         case .hdr: return .single
@@ -332,7 +368,7 @@ extension Kernel.CameraPhotoMode {
     }
 }
 
-extension CameraPhotoMode {
+extension Camera2PhotoMode {
     var kernelValue: Kernel.CameraPhotoMode {
         switch self {
         case .single: return .single
@@ -344,7 +380,7 @@ extension CameraPhotoMode {
     }
 }
 
-extension CameraBurstValue {
+extension Camera2BurstValue {
     var kernelValue: Kernel.CameraBurstCount {
         switch self {
         case .burst14Over4s: return ._14
@@ -498,6 +534,32 @@ extension CameraShutterSpeed {
     }
 }
 
+extension Camera2VideoCodec {
+    var kernelValue: Kernel.CameraVideoFileCompressionStandard {
+        switch self {
+        case .h264: return .h264
+        case .h265: return .h265
+        }
+    }
+}
+
+extension Camera2RecordingFramerate {
+    var kernelValue: Kernel.CameraVideoFrameRate {
+        switch self {
+        case .fps9: return ._8dot7
+        case .fps24: return ._24
+        case .fps25: return ._25
+        case .fps30: return ._30
+        case .fps48: return ._48
+        case .fps50: return ._50
+        case .fps60: return ._60
+        case .fps96: return ._96
+        case .fps100: return ._100
+        case .fps120: return ._120
+        }
+    }
+}
+
 extension Kernel.CameraVideoFrameRate {
     var parrotValue: CameraRecordingFramerate {
         switch self {
@@ -568,6 +630,15 @@ extension Kernel.CameraVideoResolution {
         case .max: return .resUhd4k
         case .noSSDVideo: return .resUhd4k
         case .unknown: return .resUhd4k
+        }
+    }
+}
+
+extension Camera2RecordingResolution {
+    var kernelValue: Kernel.CameraVideoResolution {
+        switch self {
+        case .resUhd4k: return ._3840x2160
+        case .res1080p: return ._1920x1080
         }
     }
 }

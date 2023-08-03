@@ -46,7 +46,7 @@
 
 "FlyingIndicatorsState.title" = "State";
 "FlyingIndicatorsState.value.0" = "Landed";
-"FlyingIndicatorsState.value.1" = "flying";
+"FlyingIndicatorsState.value.1" = "Flying";
 "FlyingIndicatorsState.value.2" = "Emergency Landing";
 "FlyingIndicatorsState.value.3" = "Emergency";
 

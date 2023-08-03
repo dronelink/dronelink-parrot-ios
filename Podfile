@@ -4,7 +4,7 @@ use_frameworks!
 
 target 'DronelinkParrot' do
   pod 'DronelinkCore', :path => '../../private/dronelink-core-ios'
-  pod 'GroundSdk', '~> 1.8.0'
-  pod 'ArsdkEngine', '~> 1.8.0'
-  pod 'SdkCore', '~> 1.8.0'
+  pod 'GroundSdk', '~> 7.7.0'
+  pod 'ArsdkEngine', '~> 7.7.0'
+  pod 'SdkCore', '~> 7.7.0'
 end

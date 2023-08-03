@@ -11,9 +11,8 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/dronelink/dronelink-parrot-ios.git", :tag => "#{s.version}" }
   s.source_files  = "DronelinkParrot/*.{swift}"
   s.resources = "DronelinkParrot/**/*.{strings}"
-
-  s.dependency "DronelinkCore", "~> 4.6.0"
-  s.dependency "GroundSdk", "~> 1.8.0"
-  s.dependency "ArsdkEngine", "~> 1.8.0"
-  s.dependency "SdkCore", "~> 1.8.0"
+  s.dependency "DronelinkCore", "~> 4.7.0"
+  s.dependency "GroundSdk", "~> 7.7.0"
+  s.dependency "ArsdkEngine", "~> 7.7.0"
+  s.dependency "SdkCore", "~> 7.7.0"
 end

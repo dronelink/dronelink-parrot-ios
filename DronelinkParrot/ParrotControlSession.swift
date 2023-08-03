@@ -22,6 +22,8 @@ public class ParrotControlSession: DroneControlSession {
         case Deactivated
     }
     
+    private static let motionEnabled = true
+    
     public let executionEngine = Kernel.ExecutionEngine.dronelinkKernel
     public let reengaging: Bool = false
     private let droneSession: ParrotDroneSession
@@ -38,28 +40,35 @@ public class ParrotControlSession: DroneControlSession {
             return attemptDisengageReason
         }
         
-        let state = droneSession.adapter.flightController?.state ?? .unavailable
-        if self.state == .FlightControllerActivateComplete && state != .active {
-            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
+        if ParrotControlSession.motionEnabled {
+            let state = droneSession.adapter.manualFlightController?.state ?? .unavailable
+            if self.state == .FlightControllerActivateComplete && state != .active {
+                return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
+            }
         }
         
         return nil
     }
     
     public func activate() -> Bool? {
-        guard let flightController = droneSession.adapter.flightController else {
+        guard let manualFlightController = droneSession.adapter.manualFlightController else {
             deactivate()
             return false
         }
         
         switch state {
         case .TakeoffStart:
+            if !ParrotControlSession.motionEnabled {
+                state = .FlightControllerActivateComplete
+                return activate()
+            }
+            
             if droneSession.state?.value.isFlying ?? false {
                 state = .FlightControllerActivateStart
                 return activate()
             }
             
-            if !flightController.canTakeOff {
+            if !manualFlightController.canTakeOff {
                 self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized)
                 self.deactivate()
                 return false
@@ -67,7 +76,7 @@ public class ParrotControlSession: DroneControlSession {
             
             state = .TakeoffAttempting
             os_log(.info, log: ParrotControlSession.log, "Attempting takeoff")
-            flightController.takeOff()
+            manualFlightController.takeOff()
             DispatchQueue.global().asyncAfter(deadline: .now() + 5.0) { [weak self] in
                 if self?.droneSession.state?.value.isFlying ?? false {
                     os_log(.info, log: ParrotControlSession.log, "Takeoff succeeded")
@@ -84,18 +93,18 @@ public class ParrotControlSession: DroneControlSession {
             return nil
             
         case .FlightControllerActivateStart:
-            droneSession.adapter.copilotController?.setting.source = .application
+            droneSession.adapter.copilot?.setting.source = .application
         
-            if flightController.state == .active {
+            if manualFlightController.state == .active {
                 state = .FlightControllerActivateComplete
                 return activate()
             }
             
-            os_log(.info, log: ParrotControlSession.log, "Attempting flight controller activation")
-            if flightController.activate() {
+            if manualFlightController.activate() {
                 state = .FlightControllerActivateComplete
                 return activate()
             }
+            
             attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.control.failed.title".localized)
             deactivate()
             return false
@@ -109,8 +118,9 @@ public class ParrotControlSession: DroneControlSession {
     }
     
     public func deactivate() {
-        droneSession.adapter.copilotController?.setting.source = .remoteControl
-        droneSession.sendResetVelocityCommand()
+        droneSession.adapter.copilot?.setting.source = .remoteControl
+        droneSession.sendResetVelocityCommands()
+        droneSession.adapter.manualFlightController?.deactivate()
         state = .Deactivated
     }
 }
